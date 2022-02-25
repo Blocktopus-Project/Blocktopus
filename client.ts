@@ -6,19 +6,25 @@ export enum State {
 
 export interface ClientDescriptor {
   connection: Deno.Conn;
-  state: State;
+  name: string;
 }
 
 export class Client {
   #inner: Deno.Conn;
   state: State;
+  name: string;
+
   constructor(clientDescription: ClientDescriptor) {
     this.#inner = clientDescription.connection;
-    this.state = clientDescription.state;
+    this.state = State.Connected;
+    this.name = clientDescription.name;
   }
 
   drop() {
     this.#inner.close();
     this.state = State.Disconnected;
+  }
+
+  async poll() {
   }
 }

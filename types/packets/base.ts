@@ -2,6 +2,7 @@ export enum States {
   Handshaking,
   Status,
   Login,
+  Play,
 }
 
 export interface BasePacket {
