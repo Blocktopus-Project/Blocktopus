@@ -12,5 +12,4 @@ export enum State {
 export interface BasePayload {
   state: State;
   packedID: number;
-  size: number;
 }
