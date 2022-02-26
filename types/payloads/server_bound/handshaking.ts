@@ -1,4 +1,4 @@
-import { BasePayload, State } from "../base.ts";
+import type { BasePayload, State } from "../base.ts";
 
 /**
  * Only here for typings

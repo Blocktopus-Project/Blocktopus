@@ -1,4 +1,4 @@
-import { BasePayload } from "../base.ts";
+import type { BasePayload } from "../base.ts";
 
 export interface LoginStartPayload extends BasePayload {
   name: string;
@@ -17,4 +17,7 @@ export interface LoginPluginResponse extends BasePayload {
   data?: Uint8Array;
 }
 
-export type LoginPayloads = LoginStartPayload | EncryptionResponsePayload;
+export type LoginPayloads =
+  | LoginStartPayload
+  | EncryptionResponsePayload
+  | LoginPluginResponse;

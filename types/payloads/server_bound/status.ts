@@ -1,4 +1,4 @@
-import { BasePayload } from "../base.ts";
+import type { BasePayload } from "../base.ts";
 
 export interface PingPayload extends BasePayload {
   payload: bigint;
