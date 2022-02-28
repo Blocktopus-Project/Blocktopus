@@ -9,6 +9,8 @@ export enum State {
   Disconnected,
 }
 
+export type Identifier = `minecraft:${string}`;
+
 export interface BasePayload {
   state: State;
   packedID: number;

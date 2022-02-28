@@ -7,3 +7,10 @@ export interface DisplayedSkinParts {
   rightPantsLeg: boolean;
   hat: boolean;
 }
+
+export interface Abilities {
+  invulnerable: boolean;
+  flying: boolean;
+  allowFlying: boolean;
+  creativeMode: boolean;
+}
