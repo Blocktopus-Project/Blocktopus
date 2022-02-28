@@ -1,7 +1,25 @@
 import type { BasePayload, Identifier } from "../base.ts";
-import type { Position } from "../../position.ts";
-import type { Abilities, DisplayedSkinParts } from "../../bit_field.ts";
-import type { DiggingStatus } from "../enums.ts";
+import type { Position } from "../position.ts";
+import type {
+  AbilitiesFlags,
+  DisplayedSkinParts,
+  SteerVehicleFlags,
+} from "../bit_field.ts";
+import type {
+  BlockFace,
+  BookID,
+  ChatMode,
+  ClientStatusAction,
+  CommandblockExecuteMode,
+  Difficulty,
+  DiggingStatus,
+  Hand,
+  InteractKind,
+  MainHand,
+  PlayerAction,
+  ResourcePackStatusResult,
+} from "../enums.ts";
+
 interface Slot {
   present: true;
   itemID: number;
@@ -21,7 +39,7 @@ export interface QueryBlockBNT extends BasePayload {
 }
 
 export interface SetDifficulty extends BasePayload {
-  newDifficulty: 0 | 1 | 2 | 3;
+  newDifficulty: Difficulty;
 }
 
 export interface ChatMessage extends BasePayload {
@@ -29,16 +47,16 @@ export interface ChatMessage extends BasePayload {
 }
 
 export interface ClientStatus extends BasePayload {
-  actionID: 0 | 1;
+  actionID: ClientStatusAction;
 }
 
 export interface ClientSettings extends BasePayload {
   locale: string;
   viewDistance: number;
-  chatMode: 0 | 1 | 2;
+  chatMode: ChatMode;
   chatColors: boolean;
   displayedSkinParts: DisplayedSkinParts;
-  mainHand: 0 | 1;
+  mainHand: MainHand;
   enableTextFiltering: boolean;
   allowServerListings: boolean;
 }
@@ -59,7 +77,7 @@ export interface ClickWindow extends BasePayload {
   slot: number;
   button: number;
   mode: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  slots: Array<ItemSlot>;
+  slots: ItemSlot[];
   clickedItem: ItemSlot;
 }
 
@@ -73,7 +91,7 @@ export interface PluginMessage extends BasePayload {
 }
 
 export interface EditBook extends BasePayload {
-  hand: 0 | 1;
+  hand: Hand;
   count: number;
   entries: string[];
   hasTitle: boolean;
@@ -87,16 +105,16 @@ export interface QueryEntityNBT extends BasePayload {
 
 interface InteractEntityBase {
   entityID: number;
-  interactionType: 0 | 1 | 2;
+  interactionType: InteractKind;
   sneaking: boolean;
 }
 
 interface InteractEntityAt extends InteractEntityBase {
-  interactionType: 2;
+  interactionType: InteractKind.InteractAt;
   targetX: number;
   targetY: number;
   targetZ: number;
-  hand: 0 | 1;
+  hand: Hand;
 }
 
 export type InteractEntity = InteractEntityBase | InteractEntityAt;
@@ -122,14 +140,8 @@ export interface PlayerMovement extends BasePayload {
   onGround: boolean;
 }
 
-/**
- * Y is at Feet level
- */
-export interface PlayerPosition extends PlayerMovement {
-  x: number;
-  y: number;
-  z: number;
-}
+/** Y is at Feet level */
+export type PlayerPosition = Position & PlayerMovement;
 
 export interface PlayerRotation extends PlayerMovement {
   yaw: number;
@@ -156,12 +168,77 @@ export interface CraftRecipeRequest extends BasePayload {
 }
 
 export interface PlayerAbilities extends BasePayload {
-  flags: Abilities;
+  flags: AbilitiesFlags;
 }
 
-export interface PlayerDigging {
+export interface PlayerDigging extends BasePayload {
   status: DiggingStatus;
   location: Position;
+  face: BlockFace;
+}
+
+export interface EntityAction extends BasePayload {
+  entityID: number;
+  actionID: PlayerAction;
+  jumpBoost: number;
+}
+
+export interface SteerVehicle extends BasePayload {
+  sideways: number;
+  forward: number;
+  flags: SteerVehicleFlags;
+}
+
+/**
+ * Compatibility reasons
+ */
+export interface Pong extends BasePayload {
+  ID: number;
+}
+
+export interface SetRecipeBookState extends BasePayload {
+  bookID: BookID;
+  bookOpen: boolean;
+  filterActive: boolean;
+}
+
+export interface NameItem extends BasePayload {
+  itemName: string;
+}
+
+export interface ResourcePackStatus extends BasePayload {
+  result: ResourcePackStatusResult;
+}
+
+interface AdvancementTabClose {
+  action: 1;
+}
+interface AdvancementTabOpen {
+  action: 0;
+  tabID: Identifier;
+}
+
+export type AdvancementTab =
+  & (AdvancementTabClose | AdvancementTabOpen)
+  & BasePayload;
+
+export interface SelectTrade extends BasePayload {
+  selectedSlot: number;
+}
+
+export interface SetBeaconEffect extends BasePayload {
+  primaryEffect: number;
+  secondaryEffect: number;
+}
+
+export interface HeldItemChange extends BasePayload {
+  slot: number;
+}
+
+export interface UpdateCommandBlock extends BasePayload {
+  location: Position;
+  command: string;
+  mode: CommandblockExecuteMode;
 }
 
 export type PlayPayloads =
@@ -189,4 +266,15 @@ export type PlayPayloads =
   | SteerBoat
   | PickItem
   | CraftRecipeRequest
-  | PlayerAbilities;
+  | PlayerAbilities
+  | PlayerDigging
+  | EntityAction
+  | SteerVehicle
+  | Pong
+  | SetRecipeBookState
+  | NameItem
+  | ResourcePackStatus
+  | AdvancementTab
+  | SelectTrade
+  | SetBeaconEffect
+  | HeldItemChange;

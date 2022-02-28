@@ -8,9 +8,20 @@ export interface DisplayedSkinParts {
   hat: boolean;
 }
 
-export interface Abilities {
+export interface AbilitiesFlags {
   invulnerable: boolean;
   flying: boolean;
   allowFlying: boolean;
   creativeMode: boolean;
+}
+
+export interface SteerVehicleFlags {
+  jump: boolean;
+  unmount: boolean;
+}
+
+export interface CommandblockFlags {
+  trackOutput: boolean;
+  isConditional: boolean;
+  automatic: boolean;
 }
