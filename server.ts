@@ -42,7 +42,7 @@ export class Server {
   #inner: Deno.Listener;
   #queue: QueueEntry[] = [];
   #queueLock: Promise<void>;
-  #resolveQueueLock!: CallableFunction;
+  #releaseQueueLock!: CallableFunction;
   #rejectQueueLock!: CallableFunction;
   clients: Client[];
   serverInfo: ServerInfo;
@@ -56,7 +56,7 @@ export class Server {
     await this.#getLock();
     const queue = this.#queue;
     this.#queue = [];
-    this.#resolveQueueLock();
+    this.#releaseQueueLock();
     queue.map((x) => this.#process(x));
   }
 
@@ -66,7 +66,7 @@ export class Server {
     this.#queueLock = new Promise((
       res,
       rej,
-    ) => (this.#resolveQueueLock = res, this.#rejectQueueLock = rej));
+    ) => (this.#releaseQueueLock = res, this.#rejectQueueLock = rej));
   }
 
   constructor(config: ServerConfig) {
@@ -90,8 +90,8 @@ export class Server {
     this.#queueLock = new Promise((
       res,
       rej,
-    ) => (this.#resolveQueueLock = res, this.#rejectQueueLock = rej));
-    this.#resolveQueueLock();
+    ) => (this.#releaseQueueLock = res, this.#rejectQueueLock = rej));
+    this.#releaseQueueLock();
 
     if (config.favicon) {
       const encodedString = btoa(
@@ -130,12 +130,14 @@ export class Server {
 
     for await (const serializedPayload of client.startPolling()) {
       const payload = deserialize(serializedPayload, client.state);
-
-      await this.#getLock();
-      this.#queue.push({ clientIndex, payload });
-      this.#resolveQueueLock();
+      if (payload.isOk()) {
+        await this.#getLock();
+        this.#queue.push({ clientIndex, payload: payload.unwrap() });
+        this.#releaseQueueLock();
+      }
     }
 
+    // Client disconnected for whatever reason (listener is dropped somewhere else already)
     delete this.clients[clientIndex];
     this.serverInfo.players.online--;
   }

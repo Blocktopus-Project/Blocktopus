@@ -1,4 +1,4 @@
-import { readVarNum } from "./util/varint.ts";
+import { readVarInt } from "./util/varint.ts";
 import { writeAll } from "./deps.ts";
 import { serialize } from "./serde/serializer.ts";
 import type { ClientBoundPayloads } from "./types/payloads/client_bound/mod.ts";
@@ -24,7 +24,7 @@ export class Client {
     const packetSizeBytes = new Uint8Array(3);
     await this.#inner.read(packetSizeBytes);
 
-    const [packetSize, bytesRead] = readVarNum(packetSizeBytes, 3).unwrap();
+    const [packetSize, bytesRead] = readVarInt(packetSizeBytes).unwrap();
 
     const readBuffer = new Uint8Array(packetSize + bytesRead - 3);
     await this.#inner.read(readBuffer);
