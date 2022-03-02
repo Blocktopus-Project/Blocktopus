@@ -25,3 +25,9 @@ export interface CommandblockFlags {
   isConditional: boolean;
   automatic: boolean;
 }
+
+export interface StructureBlockFlags {
+  ignoreEntities: boolean;
+  showAir: boolean;
+  showBoundingBox: boolean;
+}

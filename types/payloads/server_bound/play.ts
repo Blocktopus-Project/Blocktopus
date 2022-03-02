@@ -4,6 +4,7 @@ import type {
   AbilitiesFlags,
   DisplayedSkinParts,
   SteerVehicleFlags,
+  StructureBlockFlags,
 } from "../bit_field.ts";
 import type {
   BlockFace,
@@ -18,7 +19,14 @@ import type {
   MainHand,
   PlayerAction,
   ResourcePackStatusResult,
+  StructureBlockAction,
+  StructureBlockMirror,
+  StructureBlockMode,
+  StructureBlockRotation,
 } from "../enums.ts";
+
+import type { Enumerate } from "../../range.ts";
+import type { OffsetRange } from "../structureblock.ts";
 
 interface Slot {
   present: true;
@@ -241,6 +249,71 @@ export interface UpdateCommandBlock extends BasePayload {
   mode: CommandblockExecuteMode;
 }
 
+export interface UpdateCommandBlockMinecart extends BasePayload {
+  entityID: number;
+  command: string;
+  trackOutput: boolean;
+}
+
+export interface CreativeInventoryAction extends BasePayload {
+  slot: number;
+  clickedItem: Slot;
+}
+
+export interface UpdateJigsawBlock extends BasePayload {
+  location: Position;
+  name: Identifier;
+  target: Identifier;
+  pool: Identifier;
+  finalState: string;
+  jointType: string;
+}
+
+export interface UpdateStructureBlock extends BasePayload {
+  location: Position;
+  action: StructureBlockAction;
+  mode: StructureBlockMode;
+  offsetX: OffsetRange;
+  offsetY: OffsetRange;
+  offsetZ: OffsetRange;
+  sizeX: Enumerate<33>;
+  sizeY: Enumerate<33>;
+  sizeZ: Enumerate<33>;
+  mirror: StructureBlockMirror;
+  rotation: StructureBlockRotation;
+  metadata: string;
+  integrity: number;
+  seed: bigint;
+  flag: StructureBlockFlags;
+}
+
+export interface UpdateSign extends BasePayload {
+  location: Position;
+  lines: [string, string, string, string];
+}
+
+export interface Animaton extends BasePayload {
+  hand: Hand;
+}
+
+export interface Spectate extends BasePayload {
+  targetPlayer: string;
+}
+
+export interface PlayerBlockPlacement extends BasePayload {
+  hand: Hand;
+  location: Position;
+  face: BlockFace;
+  cursorPositionX: number;
+  cursorPositionY: number;
+  cursorPositionZ: number;
+  insideBlock: boolean;
+}
+
+export interface UseItem extends BasePayload {
+  hand: Hand;
+}
+
 export type PlayPayloads =
   | TeleportConfirm
   | QueryBlockBNT
@@ -277,4 +350,14 @@ export type PlayPayloads =
   | AdvancementTab
   | SelectTrade
   | SetBeaconEffect
-  | HeldItemChange;
+  | HeldItemChange
+  | UpdateCommandBlock
+  | UpdateCommandBlockMinecart
+  | CreativeInventoryAction
+  | UpdateJigsawBlock
+  | UpdateStructureBlock
+  | UpdateSign
+  | Animaton
+  | Spectate
+  | PlayerBlockPlacement
+  | UseItem;

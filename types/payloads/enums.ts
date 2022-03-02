@@ -82,3 +82,30 @@ export enum CommandblockExecuteMode {
   Auto,
   Redstone,
 }
+
+export enum StructureBlockAction {
+  UpdateData,
+  SaveStruct,
+  LoadStruct,
+  DetectSize,
+}
+
+export enum StructureBlockMode {
+  SAVE,
+  LOAD,
+  CORNER,
+  DATA,
+}
+
+export enum StructureBlockMirror {
+  None,
+  LEFT_RIGHT,
+  FRONT_BACK,
+}
+
+export enum StructureBlockRotation {
+  NONE,
+  CLOCKWISE_90,
+  CLOCKWISE_180,
+  COUNTERCLOCKWISE_90,
+}
