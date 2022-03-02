@@ -26,14 +26,12 @@ export class Client {
 
     const [packetSize, bytesRead] = readVarNum(packetSizeBytes, 3).unwrap();
 
-    const readBuffer = new Uint8Array(packetSize - (3 - bytesRead));
+    const readBuffer = new Uint8Array(packetSize + bytesRead - 3);
     await this.#inner.read(readBuffer);
-    const payloadBinary = new Uint8Array(
-      readBuffer.length + packetSizeBytes.length - bytesRead,
-    );
+    const payloadBinary = new Uint8Array(readBuffer.length + 3 - bytesRead);
 
     payloadBinary.set(packetSizeBytes.subarray(bytesRead));
-    payloadBinary.set(readBuffer, packetSizeBytes.length - bytesRead);
+    payloadBinary.set(readBuffer, 3 - bytesRead);
 
     return payloadBinary;
   }
@@ -44,12 +42,10 @@ export class Client {
     return {
       [Symbol.asyncIterator]() {
         return {
-          next: async () => {
-            return {
-              value: await thisClient.poll(),
-              done: thisClient.state === State.Disconnected,
-            };
-          },
+          next: async () => ({
+            value: await thisClient.poll(),
+            done: thisClient.state === State.Disconnected,
+          }),
         };
       },
     };
