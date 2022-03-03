@@ -1,12 +1,10 @@
-import { State } from "../types/payloads/base.ts";
-import { Err, Ok } from "../deps.ts";
+import {
+  type LoginPayloads,
+  type ServerBoundPayloads,
+  State,
+} from "../types/mod.ts";
+import { Err, Ok, type Result } from "../deps.ts";
 import { readVarInt } from "../util/varint.ts";
-import type { Result } from "../deps.ts";
-import type {
-  LoginPayloads,
-  ServerBoundPayloads,
-  // PlayPayloads,
-} from "../types/payloads/server_bound/mod.ts";
 
 const TEXT_DECODER = new TextDecoder();
 

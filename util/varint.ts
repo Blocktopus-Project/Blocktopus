@@ -1,5 +1,4 @@
-import { Err, Ok } from "../deps.ts";
-import type { Result } from "../deps.ts";
+import { Err, Ok, type Result } from "../deps.ts";
 
 export function readVarInt(
   buffer: Uint8Array,

@@ -1,14 +1,8 @@
-import { Err, Ok } from "./deps.ts";
+import { Err, Ok, type Result } from "./deps.ts";
 import { Client } from "./client.ts";
 import { writeVarInt } from "./util/varint.ts";
 import { deserialize } from "./serde/deserializer.ts";
-import { State } from "./types/payloads/base.ts";
-
-import type { ServerBoundPayloads } from "./types/payloads/server_bound/mod.ts";
-import type { Result } from "./deps.ts";
-// import type { Chat } from "./types/chat.ts";
-
-type Icon = `data:image/png;base64,${string}`;
+import { type ServerBoundPayloads, State } from "./types/mod.ts";
 
 interface PlayerInfo {
   uuid: string;
@@ -31,7 +25,7 @@ interface ServerInfo {
     sample?: PlayerInfo[];
   };
   description?: unknown;
-  favicon?: Icon;
+  favicon?: `data:image/png;base64,${string}`;
 }
 
 interface ServerConfig {

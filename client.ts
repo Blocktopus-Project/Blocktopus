@@ -1,8 +1,7 @@
 import { readVarInt } from "./util/varint.ts";
 import { writeAll } from "./deps.ts";
 import { serialize } from "./serde/serializer.ts";
-import type { ClientBoundPayloads } from "./types/payloads/client_bound/mod.ts";
-import { State } from "./types/payloads/base.ts";
+import { type ClientBoundPayloads, State } from "./types/mod.ts";
 
 export class Client {
   #inner: Deno.Conn;
