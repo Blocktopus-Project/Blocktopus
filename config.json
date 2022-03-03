@@ -1,5 +1,6 @@
 {
   "port": 25565,
   "maxPlayers": 100,
-  "motd": "U gae"
+  "motd": "Hoi Luke",
+  "favicon": "./out.png"
 }

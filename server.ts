@@ -1,9 +1,12 @@
 import { Err, Ok } from "./deps.ts";
 import { Client } from "./client.ts";
+import { writeVarInt } from "./util/varint.ts";
 import { deserialize } from "./serde/deserializer.ts";
+import { State } from "./types/payloads/base.ts";
+
 import type { ServerBoundPayloads } from "./types/payloads/server_bound/mod.ts";
 import type { Result } from "./deps.ts";
-import type { Chat } from "./types/chat.ts";
+// import type { Chat } from "./types/chat.ts";
 
 type Icon = `data:image/png;base64,${string}`;
 
@@ -19,15 +22,15 @@ interface QueueEntry {
 
 interface ServerInfo {
   version: {
-    name: "1.18.1";
-    protocol: 757;
+    name: "1.18.2";
+    protocol: 758;
   };
   players: {
     max: number;
     online: number;
     sample?: PlayerInfo[];
   };
-  description?: Chat;
+  description?: unknown;
   favicon?: Icon;
 }
 
@@ -75,8 +78,8 @@ export class Server {
 
     this.serverInfo = {
       version: {
-        name: "1.18.1",
-        protocol: 757,
+        name: "1.18.2",
+        protocol: 758,
       },
       players: {
         online: 0,
@@ -87,11 +90,7 @@ export class Server {
       },
     };
 
-    this.#queueLock = new Promise((
-      res,
-      rej,
-    ) => (this.#releaseQueueLock = res, this.#rejectQueueLock = rej));
-    this.#releaseQueueLock();
+    this.#queueLock = Promise.resolve();
 
     if (config.favicon) {
       const encodedString = btoa(
@@ -113,6 +112,31 @@ export class Server {
     // Only wants status
     if (payloadBinary[payloadBinary.length - 1] === 1) {
       // TODO: Send list ping
+      client.state = State.Status;
+      await client.poll();
+
+      const jsonBuffer = new TextEncoder().encode(
+        JSON.stringify(this.serverInfo, undefined, 0),
+      );
+
+      const varIntBytes = writeVarInt(jsonBuffer.length);
+      const responsePayload = new Uint8Array([
+        0x00,
+        ...varIntBytes,
+        ...jsonBuffer,
+      ]);
+      const packet = new Uint8Array([
+        ...writeVarInt(responsePayload.length),
+        ...responsePayload,
+      ]);
+
+      await client.send(packet);
+      const pbuff = await client.poll();
+
+      await client.send(
+        new Uint8Array([...writeVarInt(pbuff.length), ...pbuff]),
+      );
+
       return client.drop();
     }
 
