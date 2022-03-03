@@ -1,37 +1,17 @@
 import { State } from "../types/payloads/base.ts";
 import { Err, Ok } from "../deps.ts";
-import { readVarNum } from "../util/varint.ts";
+import { readVarInt } from "../util/varint.ts";
 import type { Result } from "../deps.ts";
 import type {
   LoginPayloads,
   ServerBoundPayloads,
-  StatusPayloads,
   // PlayPayloads,
 } from "../types/payloads/server_bound/mod.ts";
 
 const TEXT_DECODER = new TextDecoder();
 
-function deserializeStatus(buffer: Uint8Array): Result<StatusPayloads, string> {
-  const maybePacketID = readVarNum(buffer, 5);
-  if (maybePacketID.isErr()) return Err(maybePacketID.unwrapErr());
-  const [packedID, bytesRead] = maybePacketID.unwrap();
-
-  switch (packedID) {
-    case 0x00:
-      return Ok({ state: State.Status, packedID });
-    case 0x01:
-      return Ok({
-        state: State.Status,
-        packedID,
-        payload: new DataView(buffer.buffer, bytesRead, 8).getBigUint64(0),
-      });
-    default:
-      return Err("Invalid Payload");
-  }
-}
-
 function deserializeLogin(buffer: Uint8Array): Result<LoginPayloads, string> {
-  const maybePacketID = readVarNum(buffer, 5);
+  const maybePacketID = readVarInt(buffer);
   if (maybePacketID.isErr()) return Err(maybePacketID.unwrapErr());
   const [packedID, bytesRead] = maybePacketID.unwrap();
 
@@ -40,6 +20,7 @@ function deserializeLogin(buffer: Uint8Array): Result<LoginPayloads, string> {
       return Ok({
         state: State.Login,
         packedID,
+        // This is wrong
         name: TEXT_DECODER.decode(buffer.subarray(bytesRead)),
       });
     // case 0x01: Encryption Response
@@ -55,7 +36,7 @@ export function deserialize(
 ): Result<ServerBoundPayloads, string> {
   switch (state) {
     case State.Status: {
-      return deserializeStatus(buffer);
+      return Err("Internal Error! Please report immediately");
     }
     case State.Login: {
       return deserializeLogin(buffer);
