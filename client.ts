@@ -21,19 +21,32 @@ export class Client {
   }
 
   async poll(): Promise<Uint8Array> {
+    if (this.state === State.Disconnected) {
+      throw new Error("Cannot poll disconnected client");
+    }
+
     const packetSizeBytes = new Uint8Array(3);
     await this.#inner.read(packetSizeBytes);
-
     const [packetSize, bytesRead] = readVarInt(packetSizeBytes).unwrap();
+
+    // Not more than 3 bytes total. No new poll needed
+    // Likely a ping
+    if (packetSize + bytesRead - 3 < 1) return packetSizeBytes.subarray(1);
 
     const readBuffer = new Uint8Array(packetSize + bytesRead - 3);
     await this.#inner.read(readBuffer);
-    const payloadBinary = new Uint8Array(readBuffer.length + 3 - bytesRead);
+    const payloadBuffer = new Uint8Array(readBuffer.length + 3 - bytesRead);
 
-    payloadBinary.set(packetSizeBytes.subarray(bytesRead));
-    payloadBinary.set(readBuffer, 3 - bytesRead);
+    payloadBuffer.set(packetSizeBytes.subarray(bytesRead));
+    payloadBuffer.set(readBuffer, 3 - bytesRead);
 
-    return payloadBinary;
+    console.debug({
+      packetBuff: packetSizeBytes,
+      readBuff: readBuffer,
+      payloadBuff: payloadBuffer,
+    });
+
+    return payloadBuffer;
   }
 
   startPolling(): AsyncIterable<Uint8Array> {
@@ -52,6 +65,6 @@ export class Client {
   }
 
   send(payload: ClientBoundPayloads): Promise<void> {
-    return writeAll(this.#inner, serialize(payload));
+    return writeAll(this.#inner, payload); // serialize(payload));
   }
 }
