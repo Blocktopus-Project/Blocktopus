@@ -1,22 +1,20 @@
-import { Err, Ok, type Result } from "../deps.ts";
-
 export function readVarInt(
   buffer: Uint8Array,
-): Result<[number, number], string> {
+): [number, number] {
   let value = 0;
   let length = 0;
   while (true) {
     const currentByte = buffer[length];
     value |= (currentByte & 0x7F) << 7 * length;
     length++;
-    if (length > 5) return Err("Max Length Reached");
+    if (length > 5) throw new Error("Max Length Reached");
 
     if ((currentByte & 0x80) !== 0x80) {
       break;
     }
   }
 
-  return Ok([value, length]);
+  return [value, length];
 }
 
 export function writeVarInt(value: number): Uint8Array {
@@ -34,21 +32,21 @@ export function writeVarInt(value: number): Uint8Array {
 
 export function readVarLong(
   buffer: Uint8Array,
-): Result<[bigint, number], string> {
+): [bigint, number] {
   let value = 0n;
   let length = 0;
   while (true) {
     const currentByte = buffer[length];
     value |= BigInt((currentByte & 0x7F) << 7 * length);
     length++;
-    if (length > 5) return Err("Max Length Reached");
+    if (length > 5) throw new Error("Max Length Reached");
 
     if ((currentByte & 0x80) !== 0x80) {
       break;
     }
   }
 
-  return Ok([value, length]);
+  return [value, length];
 }
 
 export function writeVarLong(value: bigint): Uint8Array {

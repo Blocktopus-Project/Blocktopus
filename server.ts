@@ -1,4 +1,3 @@
-import { Err, Ok, type Result } from "./deps.ts";
 import { Client } from "./client.ts";
 import { writeVarInt } from "./util/varint.ts";
 import { deserialize } from "./serde/deserializer.ts";
@@ -136,22 +135,25 @@ export class Server {
 
     // TODO: Check if user is banned
 
-    const res = this.addClient(client);
-
-    if (res.isErr()) {
-      // TODO: Respond with Login disconnect
+    let clientIndex;
+    try {
+      clientIndex = this.addClient(client);
+    } catch (_) {
+      // TODO: Respond with Login Disconnect
       return client.drop();
     }
 
     this.serverInfo.players.online++;
-    const clientIndex = res.unwrap();
 
     for await (const serializedPayload of client.startPolling()) {
-      const payload = deserialize(serializedPayload, client.state);
-      if (payload.isOk()) {
+      try {
+        const payload = deserialize(serializedPayload, client.state);
+
         await this.#getLock();
-        this.#queue.push({ clientIndex, payload: payload.unwrap() });
+        this.#queue.push({ clientIndex, payload: payload });
         this.#releaseQueueLock();
+      } catch (_) {
+        // TODO: Disconnect User
       }
     }
 
@@ -160,11 +162,11 @@ export class Server {
     this.serverInfo.players.online--;
   }
 
-  addClient(client: Client): Result<number, string> {
+  addClient(client: Client): number {
     const index = this.clients.findIndex((x) => !x);
-    if (!index) return Err("No Free space");
+    if (!index) throw new Error("No Free space");
 
     this.clients[index] = client;
-    return Ok(index);
+    return index;
   }
 }

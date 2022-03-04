@@ -3,47 +3,41 @@ import {
   type ServerBoundPayloads,
   State,
 } from "../types/mod.ts";
-import { Err, Ok, type Result } from "../deps.ts";
 import { readVarInt } from "../util/varint.ts";
 
-const TEXT_DECODER = new TextDecoder();
-
-function deserializeLogin(buffer: Uint8Array): Result<LoginPayloads, string> {
-  const maybePacketID = readVarInt(buffer);
-  if (maybePacketID.isErr()) return Err(maybePacketID.unwrapErr());
-  const [packedID, bytesRead] = maybePacketID.unwrap();
-
-  switch (packedID) {
-    case 0x00:
-      return Ok({
-        state: State.Login,
-        packedID,
-        // This is wrong
-        name: TEXT_DECODER.decode(buffer.subarray(bytesRead)),
-      });
-    // case 0x01: Encryption Response
-    // case 0x02: Login Plugin Response
-    default:
-      return Err("Invalid Payload");
-  }
-}
+const _TEXT_DECODER = new TextDecoder();
 
 export function deserialize(
   buffer: Uint8Array,
   state: State,
-): Result<ServerBoundPayloads, string> {
+): ServerBoundPayloads {
+  const [packedID, bytesRead] = readVarInt(buffer);
+  const dataSlice = buffer.subarray(bytesRead);
   switch (state) {
     case State.Status: {
-      return Err("Internal Error! Please report immediately");
+      throw new Error("Internal Error! Please report immediately");
     }
     case State.Login: {
-      return deserializeLogin(buffer);
+      return deserializeLoginPackets(dataSlice, packedID);
     }
     // case State.Play: {
     //   return deserializePlay(buffer);
     // }
     default: {
-      return Err("Invalid State");
+      throw new Error("Invalid State");
     }
+  }
+}
+
+function deserializeLoginPackets(
+  _buffer: Uint8Array,
+  packedID: number,
+): LoginPayloads {
+  switch (packedID) {
+    case 0x00: {
+      return { state: State.Login, packedID, name: "" };
+    }
+    default:
+      throw new Error("Invalid or Unsupported Packet");
   }
 }
