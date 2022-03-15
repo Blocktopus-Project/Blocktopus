@@ -9,7 +9,7 @@ export enum State {
   Disconnected,
 }
 
-export type Identifier = `minecraft:${string}`;
+export type Identifier<T extends string = "minecraft"> = `${T}:${string}`;
 
 export interface BasePayload {
   state: State;
