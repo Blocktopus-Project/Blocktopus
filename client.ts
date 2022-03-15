@@ -26,7 +26,7 @@ export class Client {
 
     const packetSizeBytes = new Uint8Array(3);
     await this.#inner.read(packetSizeBytes);
-    const [packetSize, bytesRead] = readVarInt(packetSizeBytes).unwrap();
+    const [packetSize, bytesRead] = readVarInt(packetSizeBytes);
 
     // Not more than 3 bytes total. No new poll needed
     // Likely a ping
