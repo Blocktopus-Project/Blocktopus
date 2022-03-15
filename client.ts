@@ -1,6 +1,6 @@
 import { readVarInt } from "./util/varint.ts";
 import { writeAll } from "./deps.ts";
-import { serialize } from "./serde/serializer.ts";
+import { serialize as _ } from "./serde/serializer.ts";
 import { type ClientBoundPayloads, State } from "./types/mod.ts";
 
 export class Client {

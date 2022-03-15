@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "../_deps.ts";
+import { assertEquals } from "../_deps.ts";
 import {
   readVarInt,
   readVarLong,
@@ -31,26 +31,26 @@ Deno.test({
 Deno.test({
   name: "VarInt decode",
   fn: function () {
-    assertEquals(readVarInt(new Uint8Array([0])).unwrap()[0], 0);
-    assertEquals(readVarInt(new Uint8Array([1])).unwrap()[0], 1);
-    assertEquals(readVarInt(new Uint8Array([127])).unwrap()[0], 127);
-    assertEquals(readVarInt(new Uint8Array([128, 1])).unwrap()[0], 128);
-    assertEquals(readVarInt(new Uint8Array([255, 1])).unwrap()[0], 255);
-    assertEquals(readVarInt(new Uint8Array([221, 199, 1])).unwrap()[0], 25565);
+    assertEquals(readVarInt(new Uint8Array([0]))[0], 0);
+    assertEquals(readVarInt(new Uint8Array([1]))[0], 1);
+    assertEquals(readVarInt(new Uint8Array([127]))[0], 127);
+    assertEquals(readVarInt(new Uint8Array([128, 1]))[0], 128);
+    assertEquals(readVarInt(new Uint8Array([255, 1]))[0], 255);
+    assertEquals(readVarInt(new Uint8Array([221, 199, 1]))[0], 25565);
     assertEquals(
-      readVarInt(new Uint8Array([255, 255, 127])).unwrap()[0],
+      readVarInt(new Uint8Array([255, 255, 127]))[0],
       2097151,
     );
     assertEquals(
-      readVarInt(new Uint8Array([255, 255, 255, 255, 7])).unwrap()[0],
+      readVarInt(new Uint8Array([255, 255, 255, 255, 7]))[0],
       2147483647,
     );
     assertEquals(
-      readVarInt(new Uint8Array([255, 255, 255, 255, 15])).unwrap()[0],
+      readVarInt(new Uint8Array([255, 255, 255, 255, 15]))[0],
       -1,
     );
     assertEquals(
-      readVarInt(new Uint8Array([128, 128, 128, 128, 8])).unwrap()[0],
+      readVarInt(new Uint8Array([128, 128, 128, 128, 8]))[0],
       -2147483648,
     );
   },
@@ -91,11 +91,11 @@ Deno.test({
 Deno.test({
   name: "VarLong decode",
   fn: function () {
-    assertEquals(readVarLong(new Uint8Array([0])).unwrap()[0], 0n);
-    assertEquals(readVarLong(new Uint8Array([1])).unwrap()[0], 1n);
-    assertEquals(readVarLong(new Uint8Array([2])).unwrap()[0], 2n);
-    assertEquals(readVarLong(new Uint8Array([127])).unwrap()[0], 127n);
-    assertEquals(readVarLong(new Uint8Array([128, 1])).unwrap()[0], 128n);
-    assertEquals(readVarLong(new Uint8Array([255, 1])).unwrap()[0], 255n);
+    assertEquals(readVarLong(new Uint8Array([0]))[0], 0n);
+    assertEquals(readVarLong(new Uint8Array([1]))[0], 1n);
+    assertEquals(readVarLong(new Uint8Array([2]))[0], 2n);
+    assertEquals(readVarLong(new Uint8Array([127]))[0], 127n);
+    assertEquals(readVarLong(new Uint8Array([128, 1]))[0], 128n);
+    assertEquals(readVarLong(new Uint8Array([255, 1]))[0], 255n);
   },
 });
