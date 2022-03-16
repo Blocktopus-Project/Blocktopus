@@ -107,11 +107,11 @@ Deno.test({
       )[0],
       9223372036854775807n,
     );
-    // assertEquals(
-    //   readVarLong(
-    //     new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 127]),
-    //   )[0],
-    //   -1n,
-    // );
+    assertEquals(
+      readVarLong(
+        new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 1]),
+      )[0],
+      -1n,
+    );
   },
 });
