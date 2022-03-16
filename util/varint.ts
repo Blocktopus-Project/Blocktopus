@@ -29,24 +29,19 @@ export function writeVarInt(value: number): Uint8Array {
     value >>>= 7;
   }
 }
+const wasm = await WebAssembly.instantiateStreaming(
+  fetch(new URL("./varlong.wasm", import.meta.url)),
+);
+const wasmMemory = new Uint8Array(
+  (wasm.instance.exports as Record<string, WebAssembly.Memory>).mem.buffer,
+);
 
-export function readVarLong(
-  buffer: Uint8Array,
-): [bigint, number] {
-  let value = 0n;
-  let length = 0;
-  while (true) {
-    const currentByte = BigInt(buffer[length]);
-    value |= (currentByte & 0x7Fn) << BigInt(7 * length);
-    length++;
-    if (length > 10) throw new Error("Max Length Reached");
-
-    if ((currentByte & 0x80n) !== 0x80n) {
-      break;
-    }
-  }
-
-  return [value, length];
+export function readVarLong(buffer: Uint8Array) {
+  wasmMemory.set(buffer, 0);
+  return (wasm.instance.exports as Record<
+    string,
+    (ptr: number) => [bigint, number]
+  >).readVarLong(0);
 }
 
 export function writeVarLong(value: bigint): Uint8Array {
