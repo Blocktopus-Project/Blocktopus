@@ -69,14 +69,14 @@ Deno.test({
       writeVarLong(2147483647n),
       new Uint8Array([255, 255, 255, 255, 7]),
     );
-    // assertEquals(
-    //   writeVarLong(9223372036854775807n),
-    //   new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 127]),
-    // );
-    // assertEquals(
-    //   writeVarLong(-1n),
-    //   new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 1]),
-    // );
+    assertEquals(
+      writeVarLong(9223372036854775807n),
+      new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 127]),
+    );
+    assertEquals(
+      writeVarLong(-1n),
+      new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 1]),
+    );
     assertEquals(
       writeVarLong(-2147483648n),
       new Uint8Array([128, 128, 128, 128, 248, 255, 255, 255, 255, 1]),
@@ -97,5 +97,21 @@ Deno.test({
     assertEquals(readVarLong(new Uint8Array([127]))[0], 127n);
     assertEquals(readVarLong(new Uint8Array([128, 1]))[0], 128n);
     assertEquals(readVarLong(new Uint8Array([255, 1]))[0], 255n);
+    assertEquals(
+      readVarLong(new Uint8Array([255, 255, 255, 255, 7]))[0],
+      2147483647n,
+    );
+    assertEquals(
+      readVarLong(
+        new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 127]),
+      )[0],
+      9223372036854775807n,
+    );
+    // assertEquals(
+    //   readVarLong(
+    //     new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 127]),
+    //   )[0],
+    //   -1n,
+    // );
   },
 });
