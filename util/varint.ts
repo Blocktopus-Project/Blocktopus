@@ -36,23 +36,22 @@ const wasmMemory = new Uint8Array(
   (wasm.instance.exports as Record<string, WebAssembly.Memory>).mem.buffer,
 );
 
-export function readVarLong(buffer: Uint8Array) {
+type FnCall = (ptr: number) => [bigint, number];
+
+export function readVarLong(buffer: Uint8Array): [bigint, number] {
   wasmMemory.set(buffer, 0);
-  return (wasm.instance.exports as Record<
-    string,
-    (ptr: number) => [bigint, number]
-  >).readVarLong(0);
+  return (wasm.instance.exports as Record<string, FnCall>).readVarLong(0);
 }
 
 export function writeVarLong(value: bigint): Uint8Array {
   const buff: number[] = [];
   while (true) {
-    if ((value & ~0x7Fn) == 0n) {
+    if (Number(value & ~0x7Fn) == 0) {
       buff.push(Number(value));
       return new Uint8Array(buff);
     }
 
-    buff.push(Number((value & 0x7Fn) | 0x80n));
+    buff.push(Number(value & 0x7Fn) | 0x80);
     value >>= 7n;
     if (value < 0) {
       value &= ~(-1n << 57n);
