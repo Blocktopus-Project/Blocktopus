@@ -38,11 +38,13 @@
         i64.eqz
         br_if $B0
 
+        ;; Move to next iteration
         local.get $ptr
         i32.const 1
         i32.add
         local.set $ptr
 
+        ;; Branch if not over 70
         i64.const 70
         i64.lt_u
         br_if $L0
