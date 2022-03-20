@@ -20,12 +20,12 @@ export function readVarInt(
 export function writeVarInt(value: number): Uint8Array {
   const buff: number[] = [];
   while (true) {
-    if ((value & (-128)) === 0) {
+    if ((value & -128) === 0) {
       buff.push(value);
       return new Uint8Array(buff);
     }
 
-    buff.push((value & 0x7F) | 0x80);
+    buff.push(value & 0x7F | 0x80);
     value >>>= 7;
   }
 }
