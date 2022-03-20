@@ -20,7 +20,7 @@ export function readVarInt(
 export function writeVarInt(value: number): Uint8Array {
   const buff: number[] = [];
   while (true) {
-    if ((value & ~0x7F) == 0) {
+    if ((value & (-128)) === 0) {
       buff.push(value);
       return new Uint8Array(buff);
     }
@@ -29,32 +29,24 @@ export function writeVarInt(value: number): Uint8Array {
     value >>>= 7;
   }
 }
+
 const wasm = await WebAssembly.instantiateStreaming(
   fetch(new URL("./varlong.wasm", import.meta.url)),
 );
-const wasmMemory = new Uint8Array(
-  (wasm.instance.exports as Record<string, WebAssembly.Memory>).mem.buffer,
-);
 
-type FnCall = (ptr: number) => [bigint, number];
+const exports = wasm.instance.exports as unknown as {
+  mem: WebAssembly.Memory;
+  readVarLong: (ptr: number) => [bigint, number];
+  writeVarLong: (val: bigint) => number;
+};
+
+const wasmMemory = new Uint8Array(exports.mem.buffer);
 
 export function readVarLong(buffer: Uint8Array): [bigint, number] {
   wasmMemory.set(buffer, 0);
-  return (wasm.instance.exports as Record<string, FnCall>).readVarLong(0);
+  return exports.readVarLong(0);
 }
 
 export function writeVarLong(value: bigint): Uint8Array {
-  const buff: number[] = [];
-  while (true) {
-    if (Number(value & ~0x7Fn) == 0) {
-      buff.push(Number(value));
-      return new Uint8Array(buff);
-    }
-
-    buff.push(Number(value & 0x7Fn) | 0x80);
-    value >>= 7n;
-    if (value < 0) {
-      value &= ~(-1n << 57n);
-    }
-  }
+  return wasmMemory.subarray(0, exports.writeVarLong(value));
 }

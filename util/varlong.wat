@@ -58,4 +58,49 @@
     i64.div_u
     i32.wrap_i64
   )
+
+  (func $write_var_long
+    (export "writeVarLong")
+    (param $value i64)
+    (result i32)
+    (local $length i32)
+
+    (block $B0
+      (loop $L0
+        local.get $value
+        i64.const -128
+        i64.and
+        i64.eqz
+        br_if $B0
+
+        local.get $length
+
+        local.get $value
+        i64.const 127
+        i64.and
+        i64.const 128
+        i64.or
+        i64.store8
+
+        local.get $value
+        i64.const 7
+        i64.shr_u
+        local.set $value
+
+        local.get $length
+        i32.const 1
+        i32.add
+        local.set $length
+
+        br $L0
+      )
+    )
+    local.get $length
+    local.get $value
+    i64.store8
+
+    i32.const 1
+    local.get $length
+    i32.add
+  )
 )
