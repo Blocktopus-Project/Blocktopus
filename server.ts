@@ -1,6 +1,6 @@
 import { Client } from "./client.ts";
 import { writeVarInt } from "./util/varint.ts";
-import { deserialize } from "./serde/deserializer.ts";
+import { deserialize } from "./serde/deserializer/mod.ts";
 import { type ServerBoundPayloads, State } from "./types/mod.ts";
 
 interface PlayerInfo {
@@ -15,8 +15,8 @@ interface QueueEntry {
 
 interface ServerInfo {
   version: {
-    name: "1.18.2";
-    protocol: 758;
+    name: string;
+    protocol: number;
   };
   players: {
     max: number;
@@ -37,33 +37,9 @@ interface ServerConfig {
 export class Server {
   #inner: Deno.Listener;
   #queue: QueueEntry[] = [];
-  #queueLock: Promise<void>;
-  #releaseQueueLock!: CallableFunction;
-  #rejectQueueLock!: CallableFunction;
   clients: Client[];
   serverInfo: ServerInfo;
 
-  async #process(data: QueueEntry): Promise<void> {
-    const _client = this.clients[data.clientIndex];
-    await data.payload;
-  }
-
-  async #tick() {
-    await this.#getLock();
-    const queue = this.#queue;
-    this.#queue = [];
-    this.#releaseQueueLock();
-    queue.map((x) => this.#process(x));
-  }
-
-  async #getLock() {
-    await this.#queueLock;
-
-    this.#queueLock = new Promise((
-      res,
-      rej,
-    ) => (this.#releaseQueueLock = res, this.#rejectQueueLock = rej));
-  }
 
   constructor(config: ServerConfig) {
     this.clients = new Array(config.maxPlayers);
@@ -71,8 +47,8 @@ export class Server {
 
     this.serverInfo = {
       version: {
-        name: "1.18.2",
-        protocol: 758,
+        name: "1.19.2",
+        protocol: 759,
       },
       players: {
         online: 0,
@@ -82,8 +58,6 @@ export class Server {
         text: config.motd,
       },
     };
-
-    this.#queueLock = Promise.resolve();
 
     if (config.favicon) {
       const encodedString = btoa(
@@ -130,7 +104,7 @@ export class Server {
         new Uint8Array([...writeVarInt(pbuff.length), ...pbuff]),
       );
 
-      return client.drop();
+      // return client.drop();
     }
 
     // TODO: Check if user is banned

@@ -39,12 +39,6 @@ export class Client {
     payloadBuffer.set(packetSizeBytes.subarray(bytesRead));
     payloadBuffer.set(readBuffer, 3 - bytesRead);
 
-    console.debug({
-      packetBuff: packetSizeBytes,
-      readBuff: readBuffer,
-      payloadBuff: payloadBuffer,
-    });
-
     return payloadBuffer;
   }
 

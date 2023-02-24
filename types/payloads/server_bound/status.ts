@@ -1,9 +1,9 @@
 import type { BasePayload } from "../base.ts";
 
-export interface PingPayload extends BasePayload {
+export interface PingRequestPayload extends BasePayload {
   payload: bigint;
 }
 
-export type RequestPayload = BasePayload;
+export type StatusRequestPayload = BasePayload;
 
-export type StatusPayloads = PingPayload | RequestPayload;
+export type StatusPayloads = PingRequestPayload | StatusRequestPayload;
