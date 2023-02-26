@@ -1,1 +1,1 @@
-export type Packed<T> = Omit<T, "state" | "packedID">;
+export type Packet<T> = Omit<T, "state" | "packedID">;
