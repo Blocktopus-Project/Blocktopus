@@ -1,55 +1,46 @@
-import {
-  type LoginPayloads,
-  type LoginStartPayload,
-  type EncryptionResponsePayload,
+import type {
+  EncryptionResponsePayload,
+  LoginPayloads,
+  LoginStartPayload,
 } from "../../types/mod.ts";
-import type { Packed } from "../../types/util.ts";
-import { readVarInt } from "../../util/varint.ts";
-import { deserializeString } from "../util.ts";
+import type { Reader } from "../../util/reader.ts";
 
 const PACKED_DECODERS = [
   loginStart,
   encryptionResponse,
-]
+];
 
-function loginStart(buffer: Uint8Array): Packed<LoginStartPayload> {
-  const [name, offset] = deserializeString(buffer);
-  const hasPlayerUUID = !!buffer[offset];
-  const dt = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-  const firstCompliment = dt.getBigUint64(1);
-  const secondCompliment = dt.getBigUint64(9);
-
-  // Slow asf :|
-  const playerUUID = (firstCompliment << 64n) | secondCompliment;
+function loginStart(reader: Reader): LoginStartPayload {
   return {
-    name,
-    hasPlayerUUID,
-    playerUUID
+    name: reader.getString(),
+    hasPlayerUUID: !!reader.getUint8(),
+    // Slow asf :|
+    playerUUID: (reader.getBigUint64() << 64n) | reader.getBigUint64(),
   };
 }
 
-function encryptionResponse(buffer: Uint8Array): Packed<EncryptionResponsePayload> {
-  const [sharedSecretLength, offset] = readVarInt(buffer);
-  const sharedSecret = buffer.subarray(offset, sharedSecretLength);
-  buffer = buffer.subarray(offset);
+function encryptionResponse(
+  reader: Reader,
+): EncryptionResponsePayload {
+  const sharedSecretLength = reader.getVarInt();
+  const sharedSecret = reader.getSlice(sharedSecretLength);
 
-  const [verifyTokenLength, offset2] = readVarInt(buffer);
-  const verifyToken = buffer.subarray(offset2, verifyTokenLength);
-
+  const verifyTokenLength = reader.getVarInt();
+  const verifyToken = reader.getSlice(verifyTokenLength);
   return {
     sharedSecretLength,
     sharedSecret,
     verifyTokenLength,
     verifyToken,
-  }
+  };
 }
 
 export function deserializeLoginPackets(
-  buffer: Uint8Array,
+  buffer: Reader,
   packedID: number,
-): Packed<LoginPayloads> {
+): LoginPayloads {
   const decoder = PACKED_DECODERS[packedID];
   if (!decoder) throw new Error("Invalid or Unsupported Packet");
 
-  return decoder(buffer); 
+  return decoder(buffer);
 }

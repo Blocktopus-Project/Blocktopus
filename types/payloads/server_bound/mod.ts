@@ -1,3 +1,4 @@
+import type { BasePayload } from "../base.ts";
 import type { HandshakePayloads } from "./handshaking.ts";
 import type { LoginPayloads } from "./login.ts";
 import type { PlayPayloads } from "./play.ts";
@@ -9,6 +10,7 @@ export type ServerBoundPayloads =
   | PlayPayloads
   | StatusPayloads;
 
+export type Packet = ServerBoundPayloads & BasePayload;
 export * from "./handshaking.ts";
 export * from "./login.ts";
 export * from "./play.ts";
