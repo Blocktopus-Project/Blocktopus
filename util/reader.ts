@@ -46,7 +46,6 @@ export class Reader {
     return v;
   }
 
-
   getUint8(): number {
     const v = this.#view.getUint8(this.#ptr);
     this.#ptr++;
@@ -67,13 +66,13 @@ export class Reader {
 
   getBigInt64(littleEndian = false): bigint {
     const v = this.#view.getBigInt64(this.#ptr, littleEndian);
-    this.#ptr += 4;
+    this.#ptr += 8;
     return v;
   }
 
   getBigUint64(littleEndian = false): bigint {
     const v = this.#view.getBigUint64(this.#ptr, littleEndian);
-    this.#ptr += 4;
+    this.#ptr += 8;
     return v;
   }
 
@@ -82,17 +81,26 @@ export class Reader {
     this.#ptr += bytesRead;
     return v;
   }
-  
+
   getVarLong(): bigint {
     const [v, bytesRead] = readVarLong(this.#inner.subarray(this.#ptr));
     this.#ptr += bytesRead;
     return v;
   }
-  
-  getString(): string {
-    const strLength = this.getVarInt();
-    const v = TEXT_DECODER.decode(this.#inner.subarray(this.#ptr, this.#ptr + strLength));
-    this.#ptr += strLength;
+
+  getString(strLength = this.getVarInt()): string {
+    const endPtr = this.#ptr + strLength;
+    const v = TEXT_DECODER.decode(
+      this.#inner.subarray(this.#ptr, endPtr),
+    );
+    this.#ptr = endPtr;
+    return v;
+  }
+
+  getSlice(length = this.getVarInt()): Uint8Array {
+    const endPtr = this.#ptr + length;
+    const v = this.#inner.subarray(this.#ptr, endPtr);
+    this.#ptr = endPtr;
     return v;
   }
 }
