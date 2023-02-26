@@ -1,5 +1,5 @@
 import { readVarInt } from "./util/varint.ts";
-import { serialize, serialize as _ } from "./serde/serializer.ts";
+import { serialize } from "./serde/serializer.ts";
 import {
   type ClientBoundPayloads,
   type ServerBoundPayloads,
@@ -38,7 +38,8 @@ export class Client {
       throw new Error("Bad poll. Could not get packet size");
     }
 
-    const [packetSize] = readVarInt(packetSizeBytes);
+    const [packetSize, bytesRead] = readVarInt(packetSizeBytes);
+
     const { value: packetBuffer } = await reader.read(
       new Uint8Array(packetSize),
     );
@@ -47,13 +48,26 @@ export class Client {
 
     if (!packetBuffer) throw new Error("Bad poll. Could not read packet");
 
-    return deserialize(packetBuffer, this.state);
+    // 1.6 server list ping
+    if (packetBuffer[0] === 0xFE && packetBuffer[1] === 1) {
+      throw new Error("Legacy server list ping.");
+    }
+
+    // `3 - bytesRead` because `packetSizeBytes` is statically allocated to be 3 bytes
+    const packetBytes = new Uint8Array(3 - bytesRead + packetBuffer.length);
+
+    // I hate this double copy
+    packetBytes.set(packetSizeBytes.subarray(bytesRead));
+    packetBytes.set(packetBuffer, 3 - bytesRead);
+
+    return deserialize(packetBytes, this.state);
   }
 
   [Symbol.asyncIterator]() {
     if (this.state === State.Disconnected) {
       throw new Error("Cannot poll disconnected client");
     }
+
     return {
       next: async () => {
         if (this.state === State.Disconnected) {
