@@ -2,7 +2,7 @@ const wasm = await WebAssembly.instantiateStreaming(
   fetch(new URL("./varlong.wasm", import.meta.url)),
 );
 
-const exports = wasm.instance.exports as unknown as {
+const exports = wasm.instance.exports as {
   mem: WebAssembly.Memory;
   readVarLong: (ptr: number) => [bigint, number];
   writeVarLong: (val: bigint) => number;
