@@ -1,19 +1,9 @@
-import { readVarInt } from "../util/varint.ts";
 import type { Position } from "../types/payloads/position.ts";
 
-const TEXT_DECODER = new TextDecoder();
 const POSITION_X_BITSHIFT = 38n;
 const POSITION_Y_BITSHIFT = 0xFFFn;
 const POSITION_Z_BITSHIFT1 = 12n;
 const POSITION_Z_BITSHIFT2 = 0x3FFFFFFn;
-
-export function deserializeString(buffer: Uint8Array): [string, number] {
-  const [strLength, bytesRead] = readVarInt(buffer);
-  const str = TEXT_DECODER.decode(
-    buffer.subarray(bytesRead, bytesRead + strLength),
-  );
-  return [str, bytesRead + strLength];
-}
 
 export function deserializePosition(buffer: Uint8Array): [Position, number] {
   const dt = new DataView(buffer.buffer);
