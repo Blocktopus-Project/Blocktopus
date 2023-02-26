@@ -1,11 +1,11 @@
-import { type HandshakePayloads, type ServerPacket, State } from "../../types/mod.ts";
+import { type HandshakePayload, type ServerBoundPayloads, type Packet, State } from "../../types/mod.ts";
 import { deserializeLoginPackets } from "./login.ts";
 import { Reader } from "../../util/reader.ts";
 
 function deserializeHandshakePackets(
   reader: Reader,
   _state: State,
-): HandshakePayloads {
+): HandshakePayload {
   return {
     protocolVersion: reader.getVarInt(),
     serverAdress: reader.getString(),
@@ -14,7 +14,9 @@ function deserializeHandshakePackets(
   };
 }
 
-const PACKED_DECODER = [
+type Decoder = (reader: Reader, state: State) => ServerBoundPayloads;
+
+const PACKED_DECODER: Decoder[] = [
   deserializeHandshakePackets,
   /** Todo */
   () => {
@@ -27,10 +29,10 @@ const PACKED_DECODER = [
   },
 ];
 
-export function deserialize(
+export function deserialize<T extends ServerBoundPayloads>(
   buffer: Uint8Array,
   state: State,
-): ServerPacket {
+): Packet<T> {
   if (state == State.Status) {
     throw new Error("Internal Error! Please report immediately");
   }
@@ -45,5 +47,5 @@ export function deserialize(
     state,
     packedID,
     ...payload,
-  };
+  } as Packet<T>;
 }

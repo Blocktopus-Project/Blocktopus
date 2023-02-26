@@ -6,5 +6,3 @@ export interface HandshakePayload {
   serverPort: number;
   nextState: State.Status | State.Login;
 }
-
-export type HandshakePayloads = HandshakePayload;

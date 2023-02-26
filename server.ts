@@ -1,4 +1,5 @@
 import { Client } from "./client.ts";
+import type { HandshakePayload } from "./types/mod.ts";
 
 interface PlayerInfo {
   uuid: string;
@@ -77,12 +78,11 @@ export class Server {
 
   async connectClient(conn: Deno.Conn) {
     const client = new Client(conn);
-    const packet = await client.poll()
+    const handshake = await client.poll<HandshakePayload>()
       .catch(() => client.drop());
 
     // Already handled in the catch
-    if (!packet) return;
-
-    console.log(packet, conn.remoteAddr);
+    if (!handshake) return;
+    console.log(handshake, conn.remoteAddr);
   }
 }

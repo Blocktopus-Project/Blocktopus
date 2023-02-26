@@ -2,7 +2,8 @@ import { readVarInt } from "./util/varint.ts";
 import { serialize } from "./serde/serializer.ts";
 import {
   type ClientBoundPayloads,
-  type ServerPacket,
+  type ServerBoundPayloads,
+  type Packet,
   State,
 } from "./types/mod.ts";
 import { deserialize } from "./serde/deserializer/mod.ts";
@@ -27,7 +28,7 @@ export class Client {
     await writer.close();
   }
 
-  async poll(): Promise<ServerPacket> {
+  async poll<T extends ServerBoundPayloads>(): Promise<Packet<T>> {
     if (this.state === State.Disconnected) {
       throw new Error("Connot poll disconnected client");
     }
@@ -60,7 +61,7 @@ export class Client {
     packetBytes.set(packetSizeBytes.subarray(bytesRead));
     packetBytes.set(packetBuffer, 3 - bytesRead);
 
-    return deserialize(packetBytes, this.state);
+    return deserialize<T>(packetBytes, this.state);
   }
 
   [Symbol.asyncIterator]() {

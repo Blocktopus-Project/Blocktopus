@@ -15,3 +15,5 @@ export interface BasePayload {
   state: State;
   packedID: number;
 }
+
+export type Packet<T> = T & BasePayload;
