@@ -10,7 +10,7 @@ export type ServerBoundPayloads =
   | PlayPayloads
   | StatusPayloads;
 
-export type Packet = ServerBoundPayloads & BasePayload;
+export type ServerPacket = ServerBoundPayloads & BasePayload;
 export * from "./handshaking.ts";
 export * from "./login.ts";
 export * from "./play.ts";
