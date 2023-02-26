@@ -1,16 +1,8 @@
 import { Client } from "./client.ts";
-import { writeVarInt } from "./util/varint.ts";
-import { deserialize } from "./serde/deserializer/mod.ts";
-import { type ServerBoundPayloads, State } from "./types/mod.ts";
 
 interface PlayerInfo {
   uuid: string;
   name: string;
-}
-
-interface QueueEntry {
-  clientIndex: number;
-  payload: ServerBoundPayloads;
 }
 
 interface ServerInfo {
@@ -35,112 +27,62 @@ interface ServerConfig {
 }
 
 export class Server {
-  #inner: Deno.Listener;
-  #queue: QueueEntry[] = [];
-  clients: Client[];
-  serverInfo: ServerInfo;
+  #innerListener: Deno.Listener;
+  #config: ServerConfig;
+  #clients: Array<Client | null>;
+  favicon: null | `data:image/png;base64,${string}`;
 
-
-  constructor(config: ServerConfig) {
-    this.clients = new Array(config.maxPlayers);
-    this.#inner = Deno.listen({ port: config.port, transport: "tcp" });
-
-    this.serverInfo = {
+  get serverInfo(): ServerInfo {
+    const info: ServerInfo = {
       version: {
         name: "1.19.2",
         protocol: 759,
       },
       players: {
-        online: 0,
-        max: config.maxPlayers,
+        online: this.#clients.filter((x) => x !== null).length,
+        max: this.#config.maxPlayers,
       },
       description: {
-        text: config.motd,
+        text: this.#config.motd,
       },
     };
 
-    if (config.favicon) {
-      const encodedString = btoa(
-        String.fromCharCode(...Deno.readFileSync(config.favicon)),
-      );
-      this.serverInfo.favicon = `data:image/png;base64,${encodedString}`;
+    if (this.favicon) {
+      info.favicon = this.favicon;
     }
+
+    return info;
+  }
+
+  constructor(config: ServerConfig) {
+    this.#clients = new Array(config.maxPlayers).fill(null);
+    this.#config = config;
+    this.favicon = null;
+
+    if (config.favicon) {
+      const fileData = Deno.readFileSync(config.favicon);
+      const base64String = btoa(String.fromCharCode(...fileData));
+      this.favicon = `data:image/png;base64,${base64String}`;
+    }
+
+    this.#innerListener = Deno.listen({ port: config.port, transport: "tcp" });
   }
 
   async listen() {
-    for await (const conn of this.#inner) this.connectClient(conn);
+    console.log("Server is now listening on port:", this.#config.port);
+    for await (const conn of this.#innerListener) {
+      this.connectClient(conn);
+    }
   }
 
-  async connectClient(conn: Deno.Conn): Promise<void> {
+  async connectClient(conn: Deno.Conn) {
     const client = new Client(conn);
-    const payloadBinary = await client.poll();
-    if (payloadBinary[0] === 0xFE) return client.drop();
+    const packet = await client.poll()
+      .catch(() => client.drop());
 
-    // Only wants status
-    if (payloadBinary[payloadBinary.length - 1] === 1) {
-      // TODO: Send list ping
-      client.state = State.Status;
-      await client.poll();
+    // Already handled in the catch
+    if (!packet) return;
 
-      const jsonBuffer = new TextEncoder().encode(
-        JSON.stringify(this.serverInfo, undefined, 0),
-      );
-
-      const varIntBytes = writeVarInt(jsonBuffer.length);
-      const responsePayload = new Uint8Array([
-        0x00,
-        ...varIntBytes,
-        ...jsonBuffer,
-      ]);
-      const packet = new Uint8Array([
-        ...writeVarInt(responsePayload.length),
-        ...responsePayload,
-      ]);
-
-      await client.send(packet);
-      const pbuff = await client.poll();
-
-      await client.send(
-        new Uint8Array([...writeVarInt(pbuff.length), ...pbuff]),
-      );
-
-      // return client.drop();
-    }
-
-    // TODO: Check if user is banned
-
-    let clientIndex;
-    try {
-      clientIndex = this.addClient(client);
-    } catch (_) {
-      // TODO: Respond with Login Disconnect
-      return client.drop();
-    }
-
-    this.serverInfo.players.online++;
-
-    for await (const serializedPayload of client.startPolling()) {
-      try {
-        const payload = deserialize(serializedPayload, client.state);
-
-        await this.#getLock();
-        this.#queue.push({ clientIndex, payload: payload });
-        this.#releaseQueueLock();
-      } catch (_) {
-        // TODO: Disconnect User
-      }
-    }
-
-    // Client disconnected for whatever reason (listener is dropped somewhere else already)
-    delete this.clients[clientIndex];
-    this.serverInfo.players.online--;
-  }
-
-  addClient(client: Client): number {
-    const index = this.clients.findIndex((x) => !x);
-    if (!index) throw new Error("No Free space");
-
-    this.clients[index] = client;
-    return index;
+    console.log(packet, conn.remoteAddr);
   }
 }
