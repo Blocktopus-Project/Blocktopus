@@ -27,6 +27,7 @@ function encryptionResponse(
 
   const verifyTokenLength = reader.getVarInt();
   const verifyToken = reader.getSlice(verifyTokenLength);
+
   return {
     sharedSecretLength,
     sharedSecret,
@@ -39,8 +40,9 @@ export function deserializeLoginPackets(
   buffer: Reader,
   packedID: number,
 ): LoginPayloads {
-  const decoder = PACKED_DECODERS[packedID];
-  if (!decoder) throw new Error("Invalid or Unsupported Packet");
+  if (packedID >= PACKED_DECODERS.length) {
+    throw new Error("Invalid or Unsupported Packet");
+  }
 
-  return decoder(buffer);
+  return PACKED_DECODERS[packedID](buffer);
 }

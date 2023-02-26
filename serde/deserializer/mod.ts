@@ -6,16 +6,11 @@ function deserializeHandshakePackets(
   reader: Reader,
   _state: State,
 ): HandshakePayloads {
-  const protocolVersion = reader.getVarInt();
-  const serverAdress = reader.getString();
-  const serverPort = reader.getUint16();
-  const nextState = reader.getUint8();
-
   return {
-    protocolVersion,
-    serverAdress,
-    serverPort,
-    nextState,
+    protocolVersion: reader.getVarInt(),
+    serverAdress: reader.getString(),
+    serverPort: reader.getUint16(),
+    nextState: reader.getUint8(),
   };
 }
 
@@ -42,10 +37,9 @@ export function deserialize(
 
   const buffReader = new Reader(buffer);
   const packedID = buffReader.getVarInt();
-  const decoder = PACKED_DECODER[state];
-  if (!decoder) throw new Error("Invalid State");
+  if (state >= PACKED_DECODER.length) throw new Error("Invalid State");
 
-  const payload = decoder(buffReader, packedID);
+  const payload = PACKED_DECODER[state](buffReader, packedID);
 
   return {
     state,
