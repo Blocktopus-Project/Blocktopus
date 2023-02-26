@@ -1,4 +1,4 @@
-import { type HandshakePayloads, type Packet, State } from "../../types/mod.ts";
+import { type HandshakePayloads, type ServerPacket, State } from "../../types/mod.ts";
 import { deserializeLoginPackets } from "./login.ts";
 import { Reader } from "../../util/reader.ts";
 
@@ -30,7 +30,7 @@ const PACKED_DECODER = [
 export function deserialize(
   buffer: Uint8Array,
   state: State,
-): Packet {
+): ServerPacket {
   if (state == State.Status) {
     throw new Error("Internal Error! Please report immediately");
   }
