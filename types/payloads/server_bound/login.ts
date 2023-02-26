@@ -1,13 +1,11 @@
-import type { BasePayload } from "../base.ts";
-
-export interface LoginStartPayload extends BasePayload {
+export interface LoginStartPayload {
   name: string;
   hasPlayerUUID: boolean;
   /** 128 bit bigint */
   playerUUID: bigint;
 }
 
-export interface EncryptionResponsePayload extends BasePayload {
+export interface EncryptionResponsePayload {
   sharedSecretLength: number;
   /** Needs to be decrypted by server private key */
   sharedSecret: Uint8Array;
@@ -16,7 +14,7 @@ export interface EncryptionResponsePayload extends BasePayload {
 }
 
 /** Only here for typings. Not needed for vanilla */
-export interface LoginPluginResponse extends BasePayload {
+export interface LoginPluginResponse {
   messageID: number;
   successful: boolean;
   data?: Uint8Array;

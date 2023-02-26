@@ -1,4 +1,4 @@
-import type { BasePayload, Identifier } from "../base.ts";
+import type { Identifier } from "../base.ts";
 import type { Position } from "../position.ts";
 import type {
   AbilitiesFlags,
@@ -37,28 +37,28 @@ interface Slot {
 
 type ItemSlot = { present: false } | Slot;
 
-export interface TeleportConfirm extends BasePayload {
+export interface TeleportConfirm {
   teleportID: number;
 }
 
-export interface QueryBlockBNT extends BasePayload {
+export interface QueryBlockBNT {
   transactionID: number;
   location: Position;
 }
 
-export interface SetDifficulty extends BasePayload {
+export interface SetDifficulty {
   newDifficulty: Difficulty;
 }
 
-export interface ChatMessage extends BasePayload {
+export interface ChatMessage {
   message: string;
 }
 
-export interface ClientStatus extends BasePayload {
+export interface ClientStatus {
   actionID: ClientStatusAction;
 }
 
-export interface ClientSettings extends BasePayload {
+export interface ClientSettings {
   locale: string;
   viewDistance: number;
   chatMode: ChatMode;
@@ -69,17 +69,17 @@ export interface ClientSettings extends BasePayload {
   allowServerListings: boolean;
 }
 
-export interface TabComplete extends BasePayload {
+export interface TabComplete {
   transactionID: number;
   text: string;
 }
 
-export interface ClickWindowButton extends BasePayload {
+export interface ClickWindowButton {
   windowID: number;
   buttonID: number;
 }
 
-export interface ClickWindow extends BasePayload {
+export interface ClickWindow {
   windowID: number;
   stateID: number;
   slot: number;
@@ -89,16 +89,16 @@ export interface ClickWindow extends BasePayload {
   clickedItem: ItemSlot;
 }
 
-export interface CloseWindow extends BasePayload {
+export interface CloseWindow {
   windowID: number;
 }
 
-export interface PluginMessage extends BasePayload {
+export interface PluginMessage {
   channel: string;
   data: Uint8Array;
 }
 
-export interface EditBook extends BasePayload {
+export interface EditBook {
   hand: Hand;
   count: number;
   entries: string[];
@@ -106,7 +106,7 @@ export interface EditBook extends BasePayload {
   titel?: string;
 }
 
-export interface QueryEntityNBT extends BasePayload {
+export interface QueryEntityNBT {
   transactionID: number;
   entitiyID: number;
 }
@@ -127,24 +127,24 @@ interface InteractEntityAt extends InteractEntityBase {
 
 export type InteractEntity = InteractEntityBase | InteractEntityAt;
 
-export interface GenerateStructure extends BasePayload {
+export interface GenerateStructure {
   location: Position;
   levels: number;
   keepJigsaws: boolean;
 }
 
-export interface KeepAlive extends BasePayload {
+export interface KeepAlive {
   keepAliveID: number;
 }
 
 /**
  * Appears to only be used on singleplayer
  */
-export interface LockDifficulty extends BasePayload {
+export interface LockDifficulty {
   locked: boolean;
 }
 
-export interface PlayerMovement extends BasePayload {
+export interface PlayerMovement {
   onGround: boolean;
 }
 
@@ -160,38 +160,38 @@ export type PlayerPositionAndRotation = PlayerPosition & PlayerRotation;
 
 export type VehicleMove = Omit<PlayerPositionAndRotation, "onGround">;
 
-export interface SteerBoat extends BasePayload {
+export interface SteerBoat {
   leftPaddle: boolean;
   rightPaddle: boolean;
 }
 
-export interface PickItem extends BasePayload {
+export interface PickItem {
   slotToUse: number;
 }
 
-export interface CraftRecipeRequest extends BasePayload {
+export interface CraftRecipeRequest {
   windowID: number;
   recipe: Identifier;
   makeAll: boolean;
 }
 
-export interface PlayerAbilities extends BasePayload {
+export interface PlayerAbilities {
   flags: AbilitiesFlags;
 }
 
-export interface PlayerDigging extends BasePayload {
+export interface PlayerDigging {
   status: DiggingStatus;
   location: Position;
   face: BlockFace;
 }
 
-export interface EntityAction extends BasePayload {
+export interface EntityAction {
   entityID: number;
   actionID: PlayerAction;
   jumpBoost: number;
 }
 
-export interface SteerVehicle extends BasePayload {
+export interface SteerVehicle {
   sideways: number;
   forward: number;
   flags: SteerVehicleFlags;
@@ -200,21 +200,21 @@ export interface SteerVehicle extends BasePayload {
 /**
  * Compatibility reasons
  */
-export interface Pong extends BasePayload {
+export interface Pong {
   ID: number;
 }
 
-export interface SetRecipeBookState extends BasePayload {
+export interface SetRecipeBookState {
   bookID: BookID;
   bookOpen: boolean;
   filterActive: boolean;
 }
 
-export interface NameItem extends BasePayload {
+export interface NameItem {
   itemName: string;
 }
 
-export interface ResourcePackStatus extends BasePayload {
+export interface ResourcePackStatus {
   result: ResourcePackStatusResult;
 }
 
@@ -226,41 +226,39 @@ interface AdvancementTabOpen {
   tabID: Identifier;
 }
 
-export type AdvancementTab =
-  & (AdvancementTabClose | AdvancementTabOpen)
-  & BasePayload;
+export type AdvancementTab = AdvancementTabClose | AdvancementTabOpen;
 
-export interface SelectTrade extends BasePayload {
+export interface SelectTrade {
   selectedSlot: number;
 }
 
-export interface SetBeaconEffect extends BasePayload {
+export interface SetBeaconEffect {
   primaryEffect: number;
   secondaryEffect: number;
 }
 
-export interface HeldItemChange extends BasePayload {
+export interface HeldItemChange {
   slot: number;
 }
 
-export interface UpdateCommandBlock extends BasePayload {
+export interface UpdateCommandBlock {
   location: Position;
   command: string;
   mode: CommandblockExecuteMode;
 }
 
-export interface UpdateCommandBlockMinecart extends BasePayload {
+export interface UpdateCommandBlockMinecart {
   entityID: number;
   command: string;
   trackOutput: boolean;
 }
 
-export interface CreativeInventoryAction extends BasePayload {
+export interface CreativeInventoryAction {
   slot: number;
   clickedItem: Slot;
 }
 
-export interface UpdateJigsawBlock extends BasePayload {
+export interface UpdateJigsawBlock {
   location: Position;
   name: Identifier;
   target: Identifier;
@@ -269,7 +267,7 @@ export interface UpdateJigsawBlock extends BasePayload {
   jointType: string;
 }
 
-export interface UpdateStructureBlock extends BasePayload {
+export interface UpdateStructureBlock {
   location: Position;
   action: StructureBlockAction;
   mode: StructureBlockMode;
@@ -287,20 +285,20 @@ export interface UpdateStructureBlock extends BasePayload {
   flag: StructureBlockFlags;
 }
 
-export interface UpdateSign extends BasePayload {
+export interface UpdateSign {
   location: Position;
   lines: [string, string, string, string];
 }
 
-export interface Animaton extends BasePayload {
+export interface Animaton {
   hand: Hand;
 }
 
-export interface Spectate extends BasePayload {
+export interface Spectate {
   targetPlayer: string;
 }
 
-export interface PlayerBlockPlacement extends BasePayload {
+export interface PlayerBlockPlacement {
   hand: Hand;
   location: Position;
   face: BlockFace;
@@ -310,7 +308,7 @@ export interface PlayerBlockPlacement extends BasePayload {
   insideBlock: boolean;
 }
 
-export interface UseItem extends BasePayload {
+export interface UseItem {
   hand: Hand;
 }
 

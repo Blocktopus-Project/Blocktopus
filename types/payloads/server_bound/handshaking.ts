@@ -1,9 +1,6 @@
-import type { BasePayload, State } from "../base.ts";
+import type { State } from "../base.ts";
 
-/**
- * Only here for typings
- */
-export interface HandshakePayload extends BasePayload {
+export interface HandshakePayload {
   protocolVersion: number;
   serverAdress: string;
   serverPort: number;
