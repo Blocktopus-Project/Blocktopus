@@ -1,6 +1,7 @@
 import { Reader } from "@/util/reader.ts";
-import { type Packet, State } from "@/types/mod.ts";
 import { deserializeLoginPackets } from "./login.ts";
+import { deserializeStatusPackets } from "./status.ts";
+import { State, type Packet } from "@/types/mod.ts";
 import type {
   HandshakePayload,
   ServerBoundPayloads,
@@ -22,10 +23,7 @@ type Decoder = (reader: Reader, packedID: number) => ServerBoundPayloads;
 
 const PACKED_DECODER: Decoder[] = [
   deserializeHandshakePackets,
-  /** Todo */
-  () => {
-    throw "todo!";
-  },
+  deserializeStatusPackets,
   deserializeLoginPackets,
   /** Todo */
   () => {
@@ -37,10 +35,6 @@ export function deserialize<T extends ServerBoundPayloads>(
   buffer: Uint8Array,
   state: State,
 ): Packet<T> {
-  if (state == State.Status) {
-    throw new Error("Internal Error! Please report immediately");
-  }
-
   const buffReader = new Reader(buffer);
   const packedID = buffReader.getVarInt();
   if (state >= PACKED_DECODER.length) throw new Error("Invalid State");
