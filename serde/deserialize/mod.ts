@@ -9,7 +9,7 @@ import { Reader } from "../../util/reader.ts";
 
 function deserializeHandshakePackets(
   reader: Reader,
-  _state: State,
+  _packedID: number,
 ): HandshakePayload {
   return {
     protocolVersion: reader.getVarInt(),
@@ -19,7 +19,7 @@ function deserializeHandshakePackets(
   };
 }
 
-type Decoder = (reader: Reader, state: State) => ServerBoundPayloads;
+type Decoder = (reader: Reader, packedID: number) => ServerBoundPayloads;
 
 const PACKED_DECODER: Decoder[] = [
   deserializeHandshakePackets,
