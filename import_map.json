@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@/": "./",
+    "@server_payloads/": "./types/payloads/server_bound/",
+    "@client_payloads/": "./types/payloads/client_bound/"
+  }
+}

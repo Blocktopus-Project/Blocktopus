@@ -1,11 +1,10 @@
-import {
-  type HandshakePayload,
-  type Packet,
-  type ServerBoundPayloads,
-  State,
-} from "../../types/mod.ts";
+import { Reader } from "@/util/reader.ts";
+import { type Packet, State } from "@/types/mod.ts";
 import { deserializeLoginPackets } from "./login.ts";
-import { Reader } from "../../util/reader.ts";
+import type {
+  HandshakePayload,
+  ServerBoundPayloads,
+} from "@server_payloads/mod.ts";
 
 function deserializeHandshakePackets(
   reader: Reader,

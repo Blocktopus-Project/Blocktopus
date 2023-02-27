@@ -1,12 +1,8 @@
-import { readVarInt } from "./util/varint.ts";
-import { serialize } from "./serde/serializer.ts";
-import {
-  type ClientBoundPayloads,
-  type ServerBoundPayloads,
-  type Packet,
-  State,
-} from "./types/mod.ts";
-import { deserialize } from "./serde/deserializer/mod.ts";
+import { readVarInt } from "@/util/varint.ts";
+import { deserialize, serialize } from "@/serde/mod.ts";
+import { type Packet, State } from "@/types/mod.ts";
+import type { ClientBoundPayloads } from "@client_payloads/mod.ts";
+import type { ServerBoundPayloads } from "@server_payloads/mod.ts";
 
 export class Client {
   #inner: Deno.Conn;
@@ -22,15 +18,16 @@ export class Client {
     this.state = State.Disconnected;
   }
 
-  async send(payload: ClientBoundPayloads): Promise<void> {
+  async send(packet: Packet<ClientBoundPayloads>): Promise<void> {
     const writer = this.#inner.writable.getWriter();
-    await writer.write(serialize(payload));
-    await writer.close();
+
+    await writer.write(serialize(packet, this.state));
+    writer.releaseLock();
   }
 
   async poll<T extends ServerBoundPayloads>(): Promise<Packet<T>> {
     if (this.state === State.Disconnected) {
-      throw new Error("Connot poll disconnected client");
+      throw new Error("Cannot poll disconnected client");
     }
 
     const reader = this.#inner.readable.getReader({ mode: "byob" });
@@ -73,14 +70,14 @@ export class Client {
       next: async () => {
         if (this.state === State.Disconnected) {
           return {
-            value: null,
             done: true,
+            value: null,
           };
         }
 
         return {
-          value: await this.poll(),
           done: false,
+          value: await this.poll(),
         };
       },
     };

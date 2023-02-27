@@ -1,5 +1,5 @@
-// import { type PlayPayloads, State } from "../../types/mod.ts";
-// import type { Reader } from "../../util/reader.ts";
+// import { type PlayPayloads, State } from "@/types/mod.ts";
+// import type { Reader } from "@/util/reader.ts";
 
 // export function deserializePlayPackets(
 //   buffer: Reader,

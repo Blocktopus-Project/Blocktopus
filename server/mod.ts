@@ -1,6 +1,7 @@
-import { Client } from "../client.ts";
-import { LogEntry, Logger } from "../error_handling/log.ts";
-import { type HandshakePayload, State } from "../types/mod.ts";
+import type { HandshakePayload } from "@server_payloads/mod.ts";
+import { Client } from "@/client.ts";
+import { LogEntry, Logger } from "@/error_handling/log.ts";
+import { State } from "@/types/mod.ts";
 
 interface PlayerInfo {
   uuid: string;
@@ -79,8 +80,6 @@ export class Server {
     const client = new Client(conn);
     const handshake = await client.poll<HandshakePayload>();
     client.state = handshake.nextState;
-
-    console.log({handshake})
 
     if (handshake.nextState === State.Login) {
       // Find empty slot

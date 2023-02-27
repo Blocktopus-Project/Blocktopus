@@ -2,8 +2,8 @@ import type {
   EncryptionResponsePayload,
   LoginPayloads,
   LoginStartPayload,
-} from "../../types/mod.ts";
-import type { Reader } from "../../util/reader.ts";
+} from "@server_payloads/mod.ts";
+import type { Reader } from "@/util/reader.ts";
 
 const PACKED_DECODERS = [
   loginStart,

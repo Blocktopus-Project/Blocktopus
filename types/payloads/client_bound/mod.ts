@@ -1,15 +1,13 @@
-// import type { HandShakePayloads } from "./handshaking.ts";
 // import type { LoginPayloads } from "./login.ts";
 // import type { PlayPayloads } from "./play.ts";
-// import type { StatusPayloads } from "./status.ts";
+import type { StatusPayloads } from "./status.ts";
+import type { Packet } from "../base.ts";
 
-// export type ClientBoundPayloads =
-//   | HandShakePayloads
-//   | LoginPayloads
-//   | PlayPayloads
-//   | StatusPayloads;
+export type ClientBoundPayloads = // | LoginPayloads
+  // | PlayPayloads
+  StatusPayloads;
 
-export * from "./handshaking.ts";
+export type ClientPacket = Packet<ClientBoundPayloads>;
 export * from "./login.ts";
 export * from "./play.ts";
 export * from "./status.ts";

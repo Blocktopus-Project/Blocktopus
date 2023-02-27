@@ -1,4 +1,4 @@
-import type { Position } from "../types/payloads/position.ts";
+import type { Position } from "@/types/payloads/position.ts";
 
 const POSITION_X_BITSHIFT = 38n;
 const POSITION_Y_BITSHIFT = 0xFFFn;
