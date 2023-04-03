@@ -36,13 +36,15 @@ export class LogEntry {
 export class Logger {
   #transformStreams: TransformStream<LogEntry, string>[];
   #isDebug: boolean;
+  #fileHandles: Deno.FsFile[];
 
   constructor(isDebug = false) {
     this.#transformStreams = [];
+    this.#fileHandles = [];
     this.#isDebug = isDebug;
   }
 
-  addOutput(stream: WritableStream<Uint8Array>) {
+  addStreamOutput(stream: WritableStream<Uint8Array>) {
     const base = new TransformStream<LogEntry, string>({
       transform(data, controller) {
         controller.enqueue(data.fmt());
@@ -54,7 +56,17 @@ export class Logger {
     this.#transformStreams.push(base);
   }
 
-  async write(entry: LogEntry) {
+  addFileOutput(path: URL) {
+    const file = Deno.openSync(path, {
+      create: true,
+      write: true,
+      append: false,
+    });
+    this.addStreamOutput(file.writable);
+    this.#fileHandles.push(file);
+  }
+
+  async writeLog(entry: LogEntry) {
     if (entry.kind === "Debug" && !this.#isDebug) return;
 
     for (let i = 0; i < this.#transformStreams.length; i++) {
@@ -62,6 +74,19 @@ export class Logger {
       const writer = stream.writable.getWriter();
       await writer.write(entry);
       writer.releaseLock();
+    }
+  }
+
+  async drop() {
+    for (let i = 0; i < this.#transformStreams.length; i++) {
+      const stream = this.#transformStreams[i];
+      await stream.writable.close();
+      await stream.readable.cancel();
+    }
+
+    for (let i = 0; i < this.#fileHandles.length; i++) {
+      const handle = this.#fileHandles[i];
+      handle.close();
     }
   }
 }
