@@ -1,7 +1,8 @@
+import { ErrorKind, ServerError } from "@/error.ts";
 import { Reader } from "@/util/reader.ts";
 import { deserializeLoginPackets } from "./login.ts";
 import { deserializeStatusPackets } from "./status.ts";
-import { State, type Packet } from "@/types/mod.ts";
+import { type Packet, State } from "@/types/mod.ts";
 import type {
   HandshakePayload,
   ServerBoundPayloads,
@@ -9,7 +10,7 @@ import type {
 
 function deserializeHandshakePackets(
   reader: Reader,
-  _packedID: number,
+  _packetID: number,
 ): HandshakePayload {
   return {
     protocolVersion: reader.getVarInt(),
@@ -19,16 +20,17 @@ function deserializeHandshakePackets(
   };
 }
 
-type Decoder = (reader: Reader, packedID: number) => ServerBoundPayloads;
+type Decoder = (reader: Reader, packetID: number) => ServerBoundPayloads;
 
-const PACKED_DECODER: Decoder[] = [
+const PACKET_DECODER: Decoder[] = [
   deserializeHandshakePackets,
   deserializeStatusPackets,
   deserializeLoginPackets,
   /** Todo */
   () => {
-    throw "todo!";
+    throw new ServerError(ErrorKind.Deserialization, "Deserializer todo!");
   },
+  // deserializePlayPackets
 ];
 
 export function deserialize<T extends ServerBoundPayloads>(
@@ -37,9 +39,11 @@ export function deserialize<T extends ServerBoundPayloads>(
 ): Packet<T> {
   const buffReader = new Reader(buffer);
   const packedID = buffReader.getVarInt();
-  if (state >= PACKED_DECODER.length) throw new Error("Invalid State");
+  if (state < 0 || state >= PACKET_DECODER.length) {
+    throw new ServerError(ErrorKind.Deserialization, "Invalid State");
+  }
 
-  const payload = PACKED_DECODER[state](buffReader, packedID);
+  const payload = PACKET_DECODER[state](buffReader, packedID);
 
   return {
     state,

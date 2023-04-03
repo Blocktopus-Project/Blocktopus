@@ -1,3 +1,5 @@
+import { ErrorKind, ServerError } from "@/error.ts";
+
 import type {
   EncryptionResponsePayload,
   LoginPayloads,
@@ -38,11 +40,11 @@ function encryptionResponse(
 
 export function deserializeLoginPackets(
   buffer: Reader,
-  packedID: number,
+  packetID: number,
 ): LoginPayloads {
-  if (packedID >= PACKED_DECODERS.length) {
-    throw new Error("Invalid or Unsupported Packet");
+  if (packetID < 0 || packetID >= PACKED_DECODERS.length) {
+    throw new ServerError(ErrorKind.Deserialization, "Unknown Packet ID");
   }
 
-  return PACKED_DECODERS[packedID](buffer);
+  return PACKED_DECODERS[packetID](buffer);
 }
