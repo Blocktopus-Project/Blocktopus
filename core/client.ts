@@ -48,7 +48,7 @@ export class Client {
       packetSizeBytes[0] === 0xFE && packetSizeBytes[1] === 1 &&
       packetSizeBytes[2] === 0xFA
     ) {
-      await this.#logger.write(
+      await this.#logger.writeLog(
         new LogEntry("Debug", "Legacy server list ping."),
       );
       return this.poll();
