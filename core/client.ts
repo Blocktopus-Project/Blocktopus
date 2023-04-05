@@ -1,9 +1,9 @@
-import { LogEntry, Logger } from "@/server/logger.ts";
-import { readVarInt } from "@/util/varint.ts";
-import { deserialize, serialize } from "@/serde/mod.ts";
-import { type Packet, State } from "@/types/mod.ts";
-import type { ClientBoundPayloads } from "@client_payloads/mod.ts";
-import type { ServerBoundPayloads } from "@server_payloads/mod.ts";
+import { LogEntry, Logger } from "@core/logger.ts";
+import { readVarInt } from "@util/varint.ts";
+import { deserialize, serialize } from "@serde/mod.ts";
+import { type Packet, State } from "@payloads/mod.ts";
+import type { ClientBoundPayloads } from "@payloads/client/mod.ts";
+import type { ServerBoundPayloads } from "@payloads/server/mod.ts";
 
 export class Client {
   #inner: Deno.Conn;

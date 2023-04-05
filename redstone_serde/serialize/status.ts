@@ -3,9 +3,9 @@ import type {
   PingResponse,
   StatusPayloads,
   StatusResponse,
-} from "@client_payloads/mod.ts";
-import type { Packet } from "@/types/mod.ts";
-import type { Writer } from "@/util/writer.ts";
+} from "@payloads/client/mod.ts";
+import type { Packet } from "@payloads/mod.ts";
+import type { Writer } from "@util/writer.ts";
 
 export function serializeStatusPackets(
   writer: Writer,

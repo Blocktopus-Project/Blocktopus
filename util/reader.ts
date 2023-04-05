@@ -1,4 +1,4 @@
-import { readVarInt, readVarLong } from "./varint.ts";
+import { readVarInt, readVarLong } from "@util/varint.ts";
 
 const TEXT_DECODER = new TextDecoder();
 

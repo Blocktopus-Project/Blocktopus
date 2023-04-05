@@ -1,4 +1,4 @@
-import { sleep } from "@/util/sleep.ts";
+import { sleep } from "@util/sleep.ts";
 
 interface EventInfo<T, K extends string = string> {
   eventKind: K;

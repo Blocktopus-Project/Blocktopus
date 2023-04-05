@@ -1,7 +1,7 @@
-import { LogEntry, Logger } from "./logger.ts";
-import { Client } from "../client.ts";
-import { EventLoop } from "./eventloop.ts";
-import type { ServerPacket } from "@server_payloads/mod.ts";
+import { LogEntry, Logger } from "@core/logger.ts";
+import { Client } from "@core/client.ts";
+import { EventLoop } from "@core/eventloop.ts";
+import type { ServerPacket } from "@payloads/server/mod.ts";
 
 const VERSION_INFO = {
   name: "1.19.4",

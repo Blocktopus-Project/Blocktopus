@@ -1,6 +1,6 @@
 import { ErrorKind, ServerError } from "@/error.ts";
-import type { StatusPayloads } from "@server_payloads/mod.ts";
-import type { Reader } from "@/util/reader.ts";
+import type { StatusPayloads } from "@payloads/server/mod.ts";
+import type { Reader } from "@util/reader.ts";
 
 export function deserializeStatusPackets(
   reader: Reader,

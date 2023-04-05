@@ -1,4 +1,4 @@
-import { writeVarInt, writeVarLong } from "./varint.ts";
+import { writeVarInt, writeVarLong } from "@util/varint.ts";
 
 const TEXT_ENCODER = new TextEncoder();
 

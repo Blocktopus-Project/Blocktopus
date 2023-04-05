@@ -1,12 +1,12 @@
 import { ErrorKind, ServerError } from "@/error.ts";
-import { Reader } from "@/util/reader.ts";
+import { Reader } from "@util/reader.ts";
 import { deserializeLoginPackets } from "./login.ts";
 import { deserializeStatusPackets } from "./status.ts";
-import { type Packet, State } from "@/types/mod.ts";
+import { type Packet, State } from "@payloads/mod.ts";
 import type {
   HandshakePayload,
   ServerBoundPayloads,
-} from "@server_payloads/mod.ts";
+} from "@payloads/server/mod.ts";
 
 function deserializeHandshakePackets(
   reader: Reader,

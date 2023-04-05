@@ -1,8 +1,8 @@
 import { ErrorKind, ServerError } from "@/error.ts";
 import { serializeStatusPackets } from "./status.ts";
-import { Writer } from "@/util/writer.ts";
-import type { ClientPacket } from "@client_payloads/mod.ts";
-import type { State } from "@/types/mod.ts";
+import { Writer } from "@util/writer.ts";
+import type { ClientPacket } from "@payloads/client/mod.ts";
+import type { State } from "@payloads/mod.ts";
 
 type Encoder = (writer: Writer, packet: ClientPacket) => void;
 
