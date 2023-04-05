@@ -1,126 +1,135 @@
-import type { HandshakePayload } from "@server_payloads/mod.ts";
-import { Client } from "@/client.ts";
-import { LogEntry, Logger } from "@/error_handling/log.ts";
-import { State } from "@/types/mod.ts";
+// import { ServerError } from "@/error.ts";
+// import { Client } from "@/client.ts";
+// import { LogEntry, Logger } from "./logger.ts";
+// import { State } from "@/types/mod.ts";
+// import type { HandshakePayload } from "@server_payloads/mod.ts";
 
-interface PlayerInfo {
-  uuid: string;
-  name: string;
-}
+// interface PlayerInfo {
+//   uuid: string;
+//   name: string;
+// }
 
-interface ServerInfo {
-  version: {
-    name: string;
-    protocol: number;
-  };
-  players: {
-    max: number;
-    online: number;
-    sample?: PlayerInfo[];
-  };
-  description?: unknown;
-  favicon?: `data:image/png;base64,${string}`;
-}
+// interface ServerInfo {
+//   version: {
+//     name: string;
+//     protocol: number;
+//   };
+//   players: {
+//     max: number;
+//     online: number;
+//     sample?: PlayerInfo[];
+//   };
+//   description?: unknown;
+//   favicon?: `data:image/png;base64,${string}`;
+// }
 
-interface ServerConfig {
-  port: number;
-  maxPlayers: number;
-  motd: string;
-  favicon?: string;
-  debug: boolean;
-}
+// interface ServerConfig {
+//   port: number;
+//   maxPlayers: number;
+//   motd: string;
+//   favicon?: string;
+//   debug: boolean;
+// }
 
-export class Server {
-  #innerListener: Deno.Listener;
-  #config: ServerConfig;
-  #clients: Array<Client | null>;
-  #logger: Logger;
+// export class Server extends Logger {
+//   // #innerListener: Deno.Listener;
+//   // #config: ServerConfig;
+//   // #clients: Set<Client>;
+//   // #logger: Logger;
 
-  favicon: null | `data:image/png;base64,${string}`;
+//   // favicon: null | `data:image/png;base64,${string}`;
 
-  get serverInfo(): ServerInfo {
-    const info: ServerInfo = {
-      version: {
-        name: "1.19.2",
-        protocol: 761,
-      },
-      players: {
-        online: this.#clients.filter((x) => x !== null).length,
-        max: this.#config.maxPlayers,
-      },
-      description: {
-        text: this.#config.motd,
-      },
-    };
+//   // get serverInfo(): ServerInfo {
+//   //   const info: ServerInfo = {
+//   //     version: {
+//   //       name: "1.19.2",
+//   //       protocol: 761,
+//   //     },
+//   //     players: {
+//   //       online: this.#clients.size,
+//   //       max: this.#config.maxPlayers,
+//   //     },
+//   //     description: {
+//   //       text: this.#config.motd,
+//   //     },
+//   //   };
 
-    if (this.favicon) {
-      info.favicon = this.favicon;
-    }
+//   //   if (this.favicon) {
+//   //     info.favicon = this.favicon;
+//   //   }
 
-    return info;
-  }
+//   //   return info;
+//   // }
 
-  constructor(config: ServerConfig) {
-    this.#clients = new Array(config.maxPlayers).fill(null);
-    this.#config = config;
-    this.#logger = new Logger(config.debug);
-    this.#logger.addOutput(Deno.stdout.writable);
-    this.favicon = null;
+//   // constructor(config: ServerConfig) {
+//   //   this.#clients = new Set();
+//   //   this.#config = config;
+//   //   this.#logger = new Logger(config.debug);
+//   //   this.#logger.addOutput(Deno.stdout.writable);
+//   //   this.favicon = null;
 
-    if (config.favicon) {
-      const fileData = Deno.readFileSync(config.favicon);
-      const base64String = btoa(String.fromCharCode(...fileData));
-      this.favicon = `data:image/png;base64,${base64String}`;
-    }
+//   //   if (config.favicon) {
+//   //     const fileData = Deno.readFileSync(config.favicon);
+//   //     const base64String = btoa(String.fromCharCode(...fileData));
+//   //     this.favicon = `data:image/png;base64,${base64String}`;
+//   //   }
 
-    this.#innerListener = Deno.listen({ port: config.port, transport: "tcp" });
-  }
+//   //   this.#innerListener = Deno.listen({ port: config.port, transport: "tcp" });
+//   // }
 
-  async #connectClient(conn: Deno.Conn) {
-    const client = new Client(conn);
-    const handshake = await client.poll<HandshakePayload>();
-    client.state = handshake.nextState;
+//   // #errorHook(e: ServerError) {
+//   // }
 
-    if (handshake.nextState === State.Login) {
-      // Find empty slot
-      const clientSlot = this.#clients.findIndex((x) => x === null);
-      // Server is full
-      if (clientSlot === -1) {
-        client.drop();
-      }
+//   // async #connectClient(conn: Deno.Conn) {
+//   //   const client = new Client(conn, this.#logger);
+//   //   const handshake = await client.poll<HandshakePayload>()
+//   //     .catch(e => this.#errorHook(e));
 
-      this.#clients[clientSlot] = client;
-      // TODO: Login Sequence
-    }
+//   //   if (!handshake) return;
 
-    // TODO: Send server info
-    client.send();
+//   //   client.state = handshake.nextState;
 
-    for await (const packet of client) {
-      // Client is already disconnected
-      if (packet === null) break;
-      console.log(packet);
-    }
+//   //   await client.send({
+//   //     state: State.HandShaking,
+//   //     packedID: 0x00,
+//   //     JsonResponse: JSON.stringify(this.serverInfo),
+//   //   });
 
-    client.drop();
-  }
+//   //   if (handshake.nextState === State.Status) {
+//   //     // client.drop();
+//   //     return;
+//   //   }
 
-  async #startEventLoop() {}
+//   //   // Server is full
+//   //   if (this.#clients.size > this.#config.maxPlayers) {
+//   //     client.drop();
+//   //   }
 
-  async #listenConnections() {
-    for await (const conn of this.#innerListener) {
-      this.#connectClient(conn);
-    }
-  }
+//   //   this.#clients.add(client);
 
-  async listen() {
-    this.#logger.write(
-      new LogEntry("Info", `Listening on port: ${this.#config.port}`),
-    );
+//   //   // TODO: Login Sequence
+//   // }
 
-    const eventLoopPromise = this.#startEventLoop();
-    const connectionLoop = this.#listenConnections();
+//   // async #startEventLoop() {
+//   //   // while (true) {
+//   //   // }
+//   // }
 
-    await Promise.all([connectionLoop, eventLoopPromise]);
-  }
-}
+//   // async #listenConnections() {
+//   //   for await (const conn of this.#innerListener) {
+//   //     this.#connectClient(conn);
+//   //   }
+//   // }
+
+//   // async listen() {
+//   //   this.#logger.write(
+//   //     new LogEntry("Info", `Listening on port: ${this.#config.port}`),
+//   //   );
+
+//   //   const eventLoopPromise = this.#startEventLoop();
+//   //   const connectionLoop = this.#listenConnections();
+
+//   //   await Promise.all([connectionLoop, eventLoopPromise]);
+//   // }
+// }
+export * from "./server.ts";

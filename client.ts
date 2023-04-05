@@ -1,3 +1,4 @@
+import { LogEntry, Logger } from "@/server/logger.ts";
 import { readVarInt } from "@/util/varint.ts";
 import { deserialize, serialize } from "@/serde/mod.ts";
 import { type Packet, State } from "@/types/mod.ts";
@@ -6,10 +7,12 @@ import type { ServerBoundPayloads } from "@server_payloads/mod.ts";
 
 export class Client {
   #inner: Deno.Conn;
+  #logger: Logger;
   state: State;
 
-  constructor(conn: Deno.Conn) {
+  constructor(conn: Deno.Conn, logger: Logger) {
     this.#inner = conn;
+    this.#logger = logger;
     this.state = State.HandShaking;
   }
 
@@ -31,9 +34,24 @@ export class Client {
     }
 
     const reader = this.#inner.readable.getReader({ mode: "byob" });
-    const { value: packetSizeBytes } = await reader.read(new Uint8Array(3));
+
+    const { value: packetSizeBytes } = await reader.read(
+      new Uint8Array(3),
+    );
+
     if (!packetSizeBytes) {
       throw new Error("Bad poll. Could not get packet size");
+    }
+
+    // 1.6 server list ping
+    if (
+      packetSizeBytes[0] === 0xFE && packetSizeBytes[1] === 1 &&
+      packetSizeBytes[2] === 0xFA
+    ) {
+      await this.#logger.write(
+        new LogEntry("Debug", "Legacy server list ping."),
+      );
+      return this.poll();
     }
 
     const [packetSize, bytesRead] = readVarInt(packetSizeBytes);
@@ -46,11 +64,6 @@ export class Client {
 
     if (!packetBuffer) throw new Error("Bad poll. Could not read packet");
 
-    // 1.6 server list ping
-    if (packetBuffer[0] === 0xFE && packetBuffer[1] === 1) {
-      throw new Error("Legacy server list ping.");
-    }
-
     // `3 - bytesRead` because `packetSizeBytes` is statically allocated to be 3 bytes
     const packetBytes = new Uint8Array(3 - bytesRead + packetBuffer.length);
 
@@ -59,27 +72,5 @@ export class Client {
     packetBytes.set(packetBuffer, 3 - bytesRead);
 
     return deserialize<T>(packetBytes, this.state);
-  }
-
-  [Symbol.asyncIterator]() {
-    if (this.state === State.Disconnected) {
-      throw new Error("Cannot poll disconnected client");
-    }
-
-    return {
-      next: async () => {
-        if (this.state === State.Disconnected) {
-          return {
-            done: true,
-            value: null,
-          };
-        }
-
-        return {
-          done: false,
-          value: await this.poll(),
-        };
-      },
-    };
   }
 }
