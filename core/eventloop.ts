@@ -8,7 +8,7 @@ interface EventInfo<T, K extends string = string> {
 type EventHandler<T, K extends string> = (event: EventInfo<T, K>) => Promise<void>;
 type EventPoller<T, K extends string> = () => Promise<EventInfo<T, K>>;
 
-export class EventLoop<Event, PollKind extends string = string, EventKind extends string = string> {
+export class EventLoop<Event, EventKind extends string = string> {
   #eventPoller: Set<EventPoller<Event, EventKind>>;
   #eventQueue: EventInfo<Event, EventKind>[];
   #eventHandlers: Map<EventKind, EventHandler<Event, EventKind>>;
@@ -68,18 +68,17 @@ export class EventLoop<Event, PollKind extends string = string, EventKind extend
 
   async #processEvents() {
     const promises = [];
-
     const length = this.#eventQueue.length;
-    const handlerKeys = [...this.#eventHandlers.keys()];
 
-    for (let i = 0; i < length; i++) {
-      const evt = this.#eventQueue[i];
-      if (!handlerKeys.includes(evt.eventKind)) {
-        return;
+    for (const eventKind of this.#eventHandlers.keys()) {
+
+      for (let i = 0; i < length; i++) {
+        const evt = this.#eventQueue[i];
+        if (evt.eventKind !== eventKind) return;
+        
+        const handler = this.#eventHandlers.get(evt.eventKind)!;
+        promises.push(handler(evt));
       }
-
-      const handler = this.#eventHandlers.get(evt.eventKind)!;
-      promises.push(handler(evt));
     }
 
     await Promise.all(promises);
