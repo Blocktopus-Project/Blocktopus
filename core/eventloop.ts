@@ -7,11 +7,13 @@ interface EventInfo<T, K extends string = string> {
 
 type EventHandler<T, K extends string> = (event: EventInfo<T, K>) => Promise<void>;
 type EventPoller<T, K extends string> = () => Promise<EventInfo<T, K>>;
+type ErrorHook = (error: Error) => Promise<void>;
 
 export class EventLoop<Event, EventKind extends string = string> {
   #eventPoller: Set<EventPoller<Event, EventKind>>;
   #eventQueue: EventInfo<Event, EventKind>[];
   #eventHandlers: Map<EventKind, EventHandler<Event, EventKind>>;
+  #errorHook: ErrorHook | null;
 
   /** Max Time Between Tick */
   #mtbt: number;
@@ -21,6 +23,11 @@ export class EventLoop<Event, EventKind extends string = string> {
     this.#eventQueue = [];
     this.#eventHandlers = new Map();
     this.#mtbt = mtbt;
+    this.#errorHook = null;
+  }
+
+  setErrorHook(errorHook: ErrorHook) {
+    this.#errorHook = errorHook;
   }
 
   setEventHandler(eventKind: EventKind, handler: EventHandler<Event, EventKind>) {
@@ -60,10 +67,11 @@ export class EventLoop<Event, EventKind extends string = string> {
   async #poll() {
     const promises = [];
     for (const pollFn of this.#eventPoller.values()) {
-      promises.push(pollFn());
+      promises.push(pollFn().catch(this.#errorHook));
     }
 
-    this.#eventQueue = await Promise.all(promises);
+    const unfilteredResults = await Promise.all(promises);
+    this.#eventQueue = unfilteredResults.filter(x => x !== undefined) as Array<EventInfo<Event, EventKind>>;
   }
 
   async #processEvents() {
@@ -71,17 +79,15 @@ export class EventLoop<Event, EventKind extends string = string> {
     const length = this.#eventQueue.length;
 
     for (const eventKind of this.#eventHandlers.keys()) {
-
       for (let i = 0; i < length; i++) {
         const evt = this.#eventQueue[i];
-        if (evt.eventKind !== eventKind) return;
+        if (evt.eventKind !== eventKind) continue;
         
         const handler = this.#eventHandlers.get(evt.eventKind)!;
-        promises.push(handler(evt));
+        promises.push(handler(evt).catch(this.#errorHook));
       }
     }
-
-    await Promise.all(promises);
     this.#eventQueue = [];
+    await Promise.all(promises);
   }
 }
