@@ -1,4 +1,5 @@
 import { LogEntry, Logger } from "@core/logger.ts";
+import { ServerError } from "@core/error.ts";
 import { readVarInt } from "@util/varint.ts";
 import { deserialize, serialize } from "@serde/mod.ts";
 import { type Packet, State } from "@payloads/mod.ts";
@@ -30,7 +31,7 @@ export class Client {
 
   async poll<T extends ServerBoundPayloads>(): Promise<Packet<T>> {
     if (this.state === State.Disconnected) {
-      throw new Error("Cannot poll disconnected client");
+      throw new ServerError("Polling", "Cannot poll disconnected client");
     }
 
     const reader = this.#inner.readable.getReader({ mode: "byob" });
@@ -40,12 +41,13 @@ export class Client {
     );
 
     if (!packetSizeBytes) {
-      throw new Error("Bad poll. Could not get packet size");
+      throw new ServerError("Polling", "Bad poll. Could not get packet size");
     }
 
     // 1.6 server list ping
     if (
-      packetSizeBytes[0] === 0xFE && packetSizeBytes[1] === 1 &&
+      packetSizeBytes[0] === 0xFE &&
+      packetSizeBytes[1] === 0x01 &&
       packetSizeBytes[2] === 0xFA
     ) {
       await this.#logger.writeLog(
@@ -62,7 +64,9 @@ export class Client {
 
     reader.releaseLock();
 
-    if (!packetBuffer) throw new Error("Bad poll. Could not read packet");
+    if (!packetBuffer) {
+      throw new ServerError("Polling", "Bad poll. Could not read packet");
+    }
 
     // `3 - bytesRead` because `packetSizeBytes` is statically allocated to be 3 bytes
     const packetBytes = new Uint8Array(3 - bytesRead + packetBuffer.length);

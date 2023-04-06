@@ -1,13 +1,16 @@
 import { sleep } from "@util/sleep.ts";
+import type { ServerError } from "@core/error.ts";
 
 interface EventInfo<T, K extends string = string> {
   eventKind: K;
-  eventData: T
+  eventData: T;
 }
 
-type EventHandler<T, K extends string> = (event: EventInfo<T, K>) => Promise<void>;
+type EventHandler<T, K extends string> = (
+  event: EventInfo<T, K>,
+) => Promise<void>;
 type EventPoller<T, K extends string> = () => Promise<EventInfo<T, K>>;
-type ErrorHandler = (error: Error) => Promise<void>;
+type ErrorHandler = (error: ServerError) => Promise<void>;
 
 export class EventLoop<Event, EventKind extends string = string> {
   #eventPoller: Set<EventPoller<Event, EventKind>>;
@@ -30,7 +33,10 @@ export class EventLoop<Event, EventKind extends string = string> {
     this.#errorHandler = handler;
   }
 
-  setEventHandler(eventKind: EventKind, handler: EventHandler<Event, EventKind>) {
+  setEventHandler(
+    eventKind: EventKind,
+    handler: EventHandler<Event, EventKind>,
+  ) {
     this.#eventHandlers.set(eventKind, handler);
   }
 
@@ -48,7 +54,7 @@ export class EventLoop<Event, EventKind extends string = string> {
 
   async startLoop(abortSignal: AbortSignal) {
     let isAborted = false;
-    abortSignal.onabort = () => isAborted = true;
+    abortSignal.addEventListener("abort", () => isAborted = true);
 
     let lastTick = performance.now();
     while (!isAborted) {
@@ -71,7 +77,9 @@ export class EventLoop<Event, EventKind extends string = string> {
     }
 
     const unfilteredResults = await Promise.all(promises);
-    this.#eventQueue = unfilteredResults.filter(x => x !== undefined) as Array<EventInfo<Event, EventKind>>;
+    this.#eventQueue = unfilteredResults.filter((x) =>
+      x !== undefined
+    ) as Array<EventInfo<Event, EventKind>>;
   }
 
   async #processEvents() {

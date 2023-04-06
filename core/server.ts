@@ -2,6 +2,7 @@ import { LogEntry, Logger } from "@core/logger.ts";
 import { Client } from "@core/client.ts";
 import { EventLoop } from "@core/eventloop.ts";
 import type { ServerPacket } from "@payloads/server/mod.ts";
+import { ServerError } from "./error.ts";
 
 const VERSION_INFO = {
   name: "1.19.4",
@@ -21,24 +22,24 @@ interface ServerInfo {
   version: {
     name: string;
     protocol: number;
-  },
+  };
   players: {
     online: number;
     max: number;
-  },
+  };
   description: {
     text: string;
-  },
+  };
   favicon?: `data:image/png;base64${string}`;
 }
 
 export class Server extends Logger {
-  #innerListener: Deno.Listener;
+  #clients: Map<string, Client>;
+  #eventLoop: EventLoop<ServerPacket>;
   #config: ServerConfig;
-  #clients: Map<string, Client> = new Map();
-  #eventLoop: EventLoop<ServerPacket> = new EventLoop(1000 / 20);
+  #innerListener: Deno.Listener;
 
-  favicon: null | `data:image/png;base64${string}` = null;
+  favicon: null | `data:image/png;base64${string}`;
 
   get serverInfo(): ServerInfo {
     const info: ServerInfo = {
@@ -49,7 +50,7 @@ export class Server extends Logger {
       },
       description: {
         text: this.#config.motd,
-      }
+      },
     };
 
     if (this.favicon) {
@@ -61,8 +62,10 @@ export class Server extends Logger {
 
   constructor(config: ServerConfig) {
     super(config.debug);
+    this.#clients = new Map();
+    this.#eventLoop = new EventLoop(1000 / 20);
     this.#config = config;
-    
+
     this.#innerListener = Deno.listen({
       port: this.#config.port,
       transport: "tcp",
@@ -76,6 +79,7 @@ export class Server extends Logger {
     }
 
     // Create favicon
+    this.favicon = null;
     if (this.#config.faviconPath) {
       const fileData = Deno.readFileSync(this.#config.faviconPath);
       const base64 = btoa(String.fromCharCode(...fileData));
@@ -87,19 +91,35 @@ export class Server extends Logger {
     );
   }
 
-  async startListening() {}
+  async #startListening() {}
 
-  async startEventLoop() {}
+  async #startEventLoop(abortController: AbortController) {
+    this.#eventLoop.setErrorHandler(createErrorHandler(abortController, this));
 
+    await this.#eventLoop.startLoop(abortController.signal);
+  }
 
   async listen() {
-    const listenerPromise = this.startListening();
-    const eventLoopPromise = this.startEventLoop();
+    const abortController = new AbortController();
+    const abortPromise = new Promise((res) =>
+      abortController.signal.onabort = res
+    );
+    const eventLoopPromise = this.#startEventLoop(abortController);
+    const listenerPromise = this.#startListening();
 
     await super.writeLog(
       new LogEntry("Info", `Listening on port: ${this.#config.port}`),
     );
 
-    await Promise.all([listenerPromise, eventLoopPromise]);
+    return Promise.race([listenerPromise, eventLoopPromise, abortPromise]);
   }
+}
+
+function createErrorHandler(abortController: AbortController, server: Server) {
+  return async function (e: ServerError) {
+    await server.writeLog(LogEntry.fromError(e));
+    if (e.isFatal) {
+      abortController.abort(e);
+    }
+  };
 }

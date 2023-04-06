@@ -1,3 +1,5 @@
+import type { ServerError } from "./error.ts";
+
 type LogKind = "Warning" | "Error" | "Severe Error" | "Info" | "Debug";
 
 const DATE_TIME = Intl.DateTimeFormat("nl-NL", {
@@ -19,6 +21,11 @@ export class LogEntry {
     this.kind = kind;
     this.message = message;
     this.cause = cause;
+  }
+
+  static fromError(error: ServerError): LogEntry {
+    const kind = error.isFatal ? "Severe Error" : "Error";
+    return new LogEntry(kind, `${error.name}: ${error.message}`);
   }
 
   fmt(): string {

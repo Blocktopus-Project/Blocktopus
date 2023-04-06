@@ -1,6 +1,8 @@
 export class ServerError extends Error {
-  constructor(errorName: string, message: string) {
+  readonly isFatal: boolean;
+  constructor(errorName: string, message: string, isFatal = false) {
     super(message);
-    this.name = errorName;
+    this.name = `${errorName} Error`;
+    this.isFatal = isFatal;
   }
 }
