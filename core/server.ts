@@ -77,6 +77,7 @@ export class Server extends Logger {
       const fileURL = new URL(`./${new Date().toISOString()}`, directoryURL);
       super.addFileOutput(fileURL);
     }
+    super.addStreamOutput(Deno.stdout.writable);
 
     // Create favicon
     this.favicon = null;
@@ -85,10 +86,6 @@ export class Server extends Logger {
       const base64 = btoa(String.fromCharCode(...fileData));
       this.favicon = `data:image/png;base64,${base64}`;
     }
-
-    super.writeLog(
-      new LogEntry("Info", `Server started on port ${this.#config.port}`),
-    );
   }
 
   async #startListening() {}
