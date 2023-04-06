@@ -7,13 +7,13 @@ interface EventInfo<T, K extends string = string> {
 
 type EventHandler<T, K extends string> = (event: EventInfo<T, K>) => Promise<void>;
 type EventPoller<T, K extends string> = () => Promise<EventInfo<T, K>>;
-type ErrorHook = (error: Error) => Promise<void>;
+type ErrorHandler = (error: Error) => Promise<void>;
 
 export class EventLoop<Event, EventKind extends string = string> {
   #eventPoller: Set<EventPoller<Event, EventKind>>;
   #eventQueue: EventInfo<Event, EventKind>[];
   #eventHandlers: Map<EventKind, EventHandler<Event, EventKind>>;
-  #errorHook: ErrorHook | null;
+  #errorHandler: ErrorHandler | null;
 
   /** Max Time Between Tick */
   #mtbt: number;
@@ -23,11 +23,11 @@ export class EventLoop<Event, EventKind extends string = string> {
     this.#eventQueue = [];
     this.#eventHandlers = new Map();
     this.#mtbt = mtbt;
-    this.#errorHook = null;
+    this.#errorHandler = null;
   }
 
-  setErrorHook(errorHook: ErrorHook) {
-    this.#errorHook = errorHook;
+  setErrorHandler(handler: ErrorHandler) {
+    this.#errorHandler = handler;
   }
 
   setEventHandler(eventKind: EventKind, handler: EventHandler<Event, EventKind>) {
@@ -67,7 +67,7 @@ export class EventLoop<Event, EventKind extends string = string> {
   async #poll() {
     const promises = [];
     for (const pollFn of this.#eventPoller.values()) {
-      promises.push(pollFn().catch(this.#errorHook));
+      promises.push(pollFn().catch(this.#errorHandler));
     }
 
     const unfilteredResults = await Promise.all(promises);
@@ -77,16 +77,15 @@ export class EventLoop<Event, EventKind extends string = string> {
   async #processEvents() {
     const promises = [];
     const length = this.#eventQueue.length;
+    for (let i = 0; i < length; i++) {
+      const evt = this.#eventQueue[i];
 
-    for (const eventKind of this.#eventHandlers.keys()) {
-      for (let i = 0; i < length; i++) {
-        const evt = this.#eventQueue[i];
-        if (evt.eventKind !== eventKind) continue;
-        
-        const handler = this.#eventHandlers.get(evt.eventKind)!;
-        promises.push(handler(evt).catch(this.#errorHook));
-      }
+      const handler = this.#eventHandlers.get(evt.eventKind);
+      if (!handler) continue;
+
+      promises.push(handler(evt).catch(this.#errorHandler));
     }
+
     this.#eventQueue = [];
     await Promise.all(promises);
   }
