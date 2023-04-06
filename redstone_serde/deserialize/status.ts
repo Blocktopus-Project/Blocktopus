@@ -1,4 +1,4 @@
-import { ErrorKind, ServerError } from "@/error.ts";
+import { ServerError } from "@core/error.ts";
 import type { StatusPayloads } from "@payloads/server/mod.ts";
 import type { Reader } from "@util/reader.ts";
 
@@ -7,7 +7,7 @@ export function deserializeStatusPackets(
   packedID: number,
 ): StatusPayloads {
   if (packedID < 0 || packedID > 1) {
-    throw new ServerError(ErrorKind.Deserialization, "Unknown Packet ID");
+    throw new ServerError("Redstone Serde", "Unknown Packet ID");
   }
 
   if (packedID === 0) {

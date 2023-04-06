@@ -1,4 +1,4 @@
-import { ErrorKind, ServerError } from "@/error.ts";
+import { ServerError } from "@core/error.ts";
 import { serializeStatusPackets } from "./status.ts";
 import { Writer } from "@util/writer.ts";
 import type { ClientPacket } from "@payloads/client/mod.ts";
@@ -15,7 +15,7 @@ const PACKED_ENCODER: Encoder[] = [
 export function serialize(packet: ClientPacket, state: State): Uint8Array {
   const idx = state - 1;
   if (idx < 0 || idx >= PACKED_ENCODER.length) {
-    throw new ServerError(ErrorKind.Deserialization, "Invalid State");
+    throw new ServerError("Redstone Serde", "Invalid State");
   }
 
   const writer = new Writer();

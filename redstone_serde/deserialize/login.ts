@@ -1,4 +1,4 @@
-import { ErrorKind, ServerError } from "@/error.ts";
+import { ServerError } from "@core/error.ts";
 
 import type {
   EncryptionResponsePayload,
@@ -43,7 +43,7 @@ export function deserializeLoginPackets(
   packetID: number,
 ): LoginPayloads {
   if (packetID < 0 || packetID >= PACKED_DECODERS.length) {
-    throw new ServerError(ErrorKind.Deserialization, "Unknown Packet ID");
+    throw new ServerError("Redstone Serde", "Unknown Packet ID");
   }
 
   return PACKED_DECODERS[packetID](buffer);

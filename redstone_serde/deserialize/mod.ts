@@ -1,4 +1,4 @@
-import { ErrorKind, ServerError } from "@/error.ts";
+import { ServerError } from "@core/error.ts";
 import { Reader } from "@util/reader.ts";
 import { deserializeLoginPackets } from "./login.ts";
 import { deserializeStatusPackets } from "./status.ts";
@@ -28,7 +28,7 @@ const PACKET_DECODER: Decoder[] = [
   deserializeLoginPackets,
   /** Todo */
   () => {
-    throw new ServerError(ErrorKind.Deserialization, "Deserializer todo!");
+    throw new ServerError("Redstone Serde", "Deserializer todo!");
   },
   // deserializePlayPackets
 ];
@@ -40,7 +40,7 @@ export function deserialize<T extends ServerBoundPayloads>(
   const buffReader = new Reader(buffer);
   const packedID = buffReader.getVarInt();
   if (state < 0 || state >= PACKET_DECODER.length) {
-    throw new ServerError(ErrorKind.Deserialization, "Invalid State");
+    throw new ServerError("Redstone Serde", "Invalid State");
   }
 
   const payload = PACKET_DECODER[state](buffReader, packedID);

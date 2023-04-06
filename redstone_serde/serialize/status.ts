@@ -1,4 +1,4 @@
-import { ErrorKind, ServerError } from "@/error.ts";
+import { ServerError } from "@core/error.ts";
 import type {
   PingResponse,
   StatusPayloads,
@@ -12,7 +12,7 @@ export function serializeStatusPackets(
   packet: Packet<StatusPayloads>,
 ): void {
   if (packet.packedID < 0 || packet.packedID > 1) {
-    throw new ServerError(ErrorKind.Deserialization, "Unknown Packet ID");
+    throw new ServerError("Redstone Serde", "Unknown Packet ID");
   }
 
   if (packet.packedID === 0) {
