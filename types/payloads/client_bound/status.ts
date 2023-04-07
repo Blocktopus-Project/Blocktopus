@@ -1,5 +1,5 @@
 export interface StatusResponse {
-  JsonResponse: string;
+  jsonResponse: string;
 }
 
 export interface PingResponse {

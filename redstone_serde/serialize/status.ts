@@ -12,7 +12,7 @@ export function serializeStatusPackets(
   }
 
   if (packet.packedID === 0) {
-    writer.setString((packet as StatusResponse).JsonResponse);
+    writer.setString((packet as StatusResponse).jsonResponse);
     return;
   }
 
