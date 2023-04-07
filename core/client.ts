@@ -89,6 +89,6 @@ export class Client {
     // I hate this double copy
     packetBytes.set(packetSizeBytes.subarray(bytesRead));
     packetBytes.set(packetBuffer, 3 - bytesRead);
-   return deserialize<T>(packetBytes, this.state);
+    return deserialize<T>(packetBytes, this.state);
   }
 }

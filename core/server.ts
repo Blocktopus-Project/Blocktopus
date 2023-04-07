@@ -26,7 +26,7 @@ interface ServerInfo {
   players: {
     online: number;
     max: number;
-    sample?: [],
+    sample?: [];
   };
   description: {
     text: string;
