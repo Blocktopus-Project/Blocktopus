@@ -8,7 +8,7 @@ interface EventInfo<T> {
 
 type EventHandler<T> = (event: T) => Promise<void>;
 type EventPoller<T> = () => Promise<T>;
-type ErrorHandler = (error: ServerError) => Promise<void>;
+export type ErrorHandler = (error: ServerError) => Promise<void>;
 
 class Queue<T> {
   #inner: T[];
