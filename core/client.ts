@@ -4,17 +4,45 @@ import { readVarInt } from "@util/varint.ts";
 import { deserialize, serialize } from "@serde/mod.ts";
 import { type Packet, State } from "@payloads/mod.ts";
 import type { ClientBoundPayloads } from "@payloads/client/mod.ts";
-import type { ServerBoundPayloads } from "@payloads/server/mod.ts";
+import type { HandshakePayload, ServerBoundPayloads } from "@payloads/server/mod.ts";
+import type { Server } from "@core/server.ts";
 
 export class Client {
   #inner: Deno.Conn;
   #logger: Logger;
   state: State;
+  id: number;
 
   constructor(conn: Deno.Conn, logger: Logger) {
     this.#inner = conn;
     this.#logger = logger;
     this.state = State.HandShaking;
+    this.id = conn.rid;
+  }
+
+  /**
+   * Returns `false` if the client only wants a Server List Ping
+   */
+  static async establishConnection(conn: Deno.Conn, server: Server): Promise<Client | false> {
+    const tempClient = new Client(conn, server);
+    const packet = await tempClient.poll<HandshakePayload>();
+
+    // Legacy ping
+    if (packet.packetID === 122) {
+      tempClient.#logger.writeLog(new LogEntry("Debug", "Legacy Ping"));
+      tempClient.drop();
+      return false;
+    }
+
+    tempClient.state = packet.nextState;
+    // Set state to the next one
+    await tempClient.send({
+      state: State.HandShaking,
+      packetID: 0x00,
+      jsonResponse: JSON.stringify(server.serverInfo),
+    });
+
+    return tempClient;
   }
 
   drop() {
@@ -36,32 +64,19 @@ export class Client {
 
     const reader = this.#inner.readable.getReader({ mode: "byob" });
 
-    const { value: packetSizeBytes } = await reader.read(
-      new Uint8Array(3),
-    );
-
+    const packetSizeBytes = (await reader.read(new Uint8Array(3))).value;
     if (!packetSizeBytes) {
       throw new ServerError("Polling", "Bad poll. Could not get packet size");
     }
 
-    // 1.6 server list ping
-    if (
-      packetSizeBytes[0] === 0xFE &&
-      packetSizeBytes[1] === 0x01 &&
-      packetSizeBytes[2] === 0xFA
-    ) {
-      await this.#logger.writeLog(
-        new LogEntry("Debug", "Legacy server list ping."),
-      );
-      return this.poll();
+    const [packetSize, bytesRead] = readVarInt(packetSizeBytes);
+    // Check for status ping
+    if (packetSize === 0 && this.state === State.Status) {
+      reader.releaseLock();
+      return deserialize<T>(packetSizeBytes, this.state);
     }
 
-    const [packetSize, bytesRead] = readVarInt(packetSizeBytes);
-
-    const { value: packetBuffer } = await reader.read(
-      new Uint8Array(packetSize),
-    );
-
+    const packetBuffer = (await reader.read(new Uint8Array(packetSize))).value;
     reader.releaseLock();
 
     if (!packetBuffer) {
@@ -74,7 +89,6 @@ export class Client {
     // I hate this double copy
     packetBytes.set(packetSizeBytes.subarray(bytesRead));
     packetBytes.set(packetBuffer, 3 - bytesRead);
-
-    return deserialize<T>(packetBytes, this.state);
+   return deserialize<T>(packetBytes, this.state);
   }
 }

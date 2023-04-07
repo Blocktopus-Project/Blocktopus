@@ -1,8 +1,8 @@
 import { LogEntry, Logger } from "@core/logger.ts";
-import { Client } from "@core/client.ts";
 import { EventLoop } from "@core/eventloop.ts";
 import type { ServerPacket } from "@payloads/server/mod.ts";
-import { ServerError } from "./error.ts";
+import type { ServerError } from "@core/error.ts";
+import { Client } from "@core/client.ts";
 
 const VERSION_INFO = {
   name: "1.19.4",
@@ -26,11 +26,13 @@ interface ServerInfo {
   players: {
     online: number;
     max: number;
+    sample?: [],
   };
   description: {
     text: string;
   };
-  favicon?: `data:image/png;base64${string}`;
+  favicon?: `data:image/png;base64,${string}`;
+  enforcesSecureChat: boolean;
 }
 
 export class Server extends Logger {
@@ -40,7 +42,7 @@ export class Server extends Logger {
   #config: ServerConfig;
   #innerListener: Deno.Listener;
 
-  favicon: null | `data:image/png;base64${string}`;
+  favicon: null | `data:image/png;base64,${string}`;
 
   get serverInfo(): ServerInfo {
     const info: ServerInfo = {
@@ -52,6 +54,7 @@ export class Server extends Logger {
       description: {
         text: this.#config.motd,
       },
+      enforcesSecureChat: false,
     };
 
     if (this.favicon) {
@@ -90,7 +93,13 @@ export class Server extends Logger {
     }
   }
 
-  async #startListening() {}
+  async #startListening() {
+    for await (const conn of this.#innerListener) {
+      const client = await Client.establishConnection(conn, this);
+      if (!client) continue;
+      this.#eventLoop.setEventPoller("client_poll", client.id, client.poll);
+    }
+  }
 
   async #startEventLoop() {
     this.#eventLoop.setErrorHandler(createErrorHandler(this.#abortController, this));
