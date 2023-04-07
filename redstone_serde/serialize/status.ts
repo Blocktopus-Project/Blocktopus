@@ -1,9 +1,5 @@
 import { ServerError } from "@core/error.ts";
-import type {
-  PingResponse,
-  StatusPayloads,
-  StatusResponse,
-} from "@payloads/client/mod.ts";
+import type { PingResponse, StatusPayloads, StatusResponse } from "@payloads/client/mod.ts";
 import type { Packet } from "@payloads/mod.ts";
 import type { Writer } from "@util/writer.ts";
 

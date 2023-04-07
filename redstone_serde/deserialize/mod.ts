@@ -3,10 +3,7 @@ import { Reader } from "@util/reader.ts";
 import { deserializeLoginPackets } from "./login.ts";
 import { deserializeStatusPackets } from "./status.ts";
 import { type Packet, State } from "@payloads/mod.ts";
-import type {
-  HandshakePayload,
-  ServerBoundPayloads,
-} from "@payloads/server/mod.ts";
+import type { HandshakePayload, ServerBoundPayloads } from "@payloads/server/mod.ts";
 
 function deserializeHandshakePackets(
   reader: Reader,

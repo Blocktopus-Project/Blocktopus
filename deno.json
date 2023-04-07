@@ -8,5 +8,10 @@
     "@payloads/client/": "./types/payloads/client_bound/",
     "@types/": "./types/",
     "@/": "./"
+  },
+  "fmt": {
+    "options": {
+      "lineWidth": 100
+    }
   }
 }
