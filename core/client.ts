@@ -25,11 +25,12 @@ export class Client {
    */
   static async establishConnection(conn: Deno.Conn, server: Server): Promise<Client | false> {
     const tempClient = new Client(conn, server);
+    await tempClient.#logger.writeLog(new LogEntry("Debug", `Trying to establish a connection (client: ${tempClient.id})`));
     const packet = await tempClient.poll<HandshakePayload>();
 
     // Legacy ping
     if (packet.packetID === 122) {
-      tempClient.#logger.writeLog(new LogEntry("Debug", "Legacy Ping"));
+      await tempClient.#logger.writeLog(new LogEntry("Debug", "Legacy Ping"));
       tempClient.drop();
       return false;
     }
@@ -41,7 +42,7 @@ export class Client {
       packetID: 0x00,
       jsonResponse: JSON.stringify(server.serverInfo),
     });
-
+    await tempClient.#logger.writeLog(new LogEntry("Debug", `Successfully send SLP! (client: ${tempClient.id})`));
     return tempClient;
   }
 
@@ -52,12 +53,15 @@ export class Client {
 
   async send(packet: Packet<ClientBoundPayloads>): Promise<void> {
     const writer = this.#inner.writable.getWriter();
-
+    await this.#logger.writeLog(new LogEntry("Debug", `Sending packet (client: ${this.id})`));
     await writer.write(serialize(packet, this.state));
+
+    await this.#logger.writeLog(new LogEntry("Debug", `Packet send (client: ${this.id})`));
     writer.releaseLock();
   }
 
   async poll<T extends ServerBoundPayloads>(): Promise<Packet<T>> {
+    await this.#logger.writeLog(new LogEntry("Debug", `Polling (client: ${this.id})`));
     if (this.state === State.Disconnected) {
       throw new ServerError("Polling", "Cannot poll disconnected client");
     }
@@ -72,6 +76,7 @@ export class Client {
     const [packetSize, bytesRead] = readVarInt(packetSizeBytes);
     // Check for status ping
     if (packetSize === 0 && this.state === State.Status) {
+      await this.#logger.writeLog(new LogEntry("Debug", `Status ping (client: ${this.id})`));
       reader.releaseLock();
       return deserialize<T>(packetSizeBytes, this.state);
     }
@@ -89,6 +94,8 @@ export class Client {
     // I hate this double copy
     packetBytes.set(packetSizeBytes.subarray(bytesRead));
     packetBytes.set(packetBuffer, 3 - bytesRead);
+
+    await this.#logger.writeLog(new LogEntry("Debug", `Deserializing packet (client: ${this.id})`));
     return deserialize<T>(packetBytes, this.state);
   }
 }
