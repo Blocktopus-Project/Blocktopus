@@ -6,8 +6,8 @@ interface EventInfo<T> {
   data: T;
 }
 
-type EventHandler<T> = (event: EventInfo<T>) => Promise<void>;
-type EventPoller<T> = () => Promise<EventInfo<T>>;
+type EventHandler<T> = (event: T) => Promise<void>;
+type EventPoller<T> = () => Promise<T>;
 type ErrorHandler = (error: ServerError) => Promise<void>;
 
 class Queue<T> {
@@ -59,13 +59,13 @@ export class EventLoop<Event> {
     this.#eventHandlers.delete(eventKind);
   }
 
-  setEventPoller(id: number, poller: EventPoller<Event>) {
+  setEventPoller(id: number, eventKind: string, poller: EventPoller<Event>) {
     const pollfn = async () => {
       while (!this.#abortSignal.aborted && this.#eventPollers.has(id)) {
         const v = await poller().catch(this.#errorHandler);
         if (!v) continue;
 
-        this.#eventQueue.add(v);
+        this.#eventQueue.add({ kind: eventKind, data: v });
       }
     };
 
@@ -99,7 +99,7 @@ export class EventLoop<Event> {
       const handler = this.#eventHandlers.get(evt.kind);
       if (!handler) continue;
 
-      promises.push(handler(evt).catch(this.#errorHandler));
+      promises.push(handler(evt.data).catch(this.#errorHandler));
     }
 
     await Promise.all(promises);
