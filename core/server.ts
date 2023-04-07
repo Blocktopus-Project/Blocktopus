@@ -18,6 +18,11 @@ interface ServerConfig {
   debug?: boolean;
 }
 
+interface PlayerSampleInfo {
+  name: string;
+  id: string;
+}
+
 interface ServerInfo {
   version: {
     name: string;
@@ -26,7 +31,7 @@ interface ServerInfo {
   players: {
     online: number;
     max: number;
-    sample?: [];
+    sample?: PlayerSampleInfo[];
   };
   description: {
     text: string;
