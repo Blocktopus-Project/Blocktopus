@@ -6,7 +6,6 @@
     "@payloads/": "./types/payloads/",
     "@payloads/server/": "./types/payloads/server_bound/",
     "@payloads/client/": "./types/payloads/client_bound/",
-    "@types/": "./types/",
     "@/": "./"
   },
   "fmt": {
