@@ -43,6 +43,13 @@ export class Client {
       jsonResponse: JSON.stringify(server.serverInfo),
     });
     await tempClient.#logger.writeLog(new LogEntry("Debug", `Successfully send SLP! (client: ${tempClient.id})`));
+
+    if (tempClient.state === State.Status) {
+      tempClient.#logger.writeLog(new LogEntry("Debug", `Only wanted SLP, closing now (client: ${tempClient.id})`));
+      tempClient.drop();
+      return false;
+    }
+
     return tempClient;
   }
 
