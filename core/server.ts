@@ -1,5 +1,5 @@
 import { LogEntry, Logger } from "@core/logger.ts";
-import { EventLoop, type ErrorHandler } from "@core/eventloop.ts";
+import { type ErrorHandler, EventLoop } from "@core/eventloop.ts";
 import type { ServerPacket } from "@payloads/server/mod.ts";
 import type { ServerError } from "@core/error.ts";
 import { Client } from "@core/client.ts";

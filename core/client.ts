@@ -25,7 +25,9 @@ export class Client {
    */
   static async establishConnection(conn: Deno.Conn, server: Server): Promise<Client | false> {
     const tempClient = new Client(conn, server);
-    await tempClient.#logger.writeLog(new LogEntry("Debug", `Trying to establish a connection (client: ${tempClient.id})`));
+    await tempClient.#logger.writeLog(
+      new LogEntry("Debug", `Trying to establish a connection (client: ${tempClient.id})`),
+    );
     const packet = await tempClient.poll<HandshakePayload>();
 
     // Legacy ping
@@ -42,10 +44,14 @@ export class Client {
       packetID: 0x00,
       jsonResponse: JSON.stringify(server.serverInfo),
     });
-    await tempClient.#logger.writeLog(new LogEntry("Debug", `Successfully send SLP! (client: ${tempClient.id})`));
+    await tempClient.#logger.writeLog(
+      new LogEntry("Debug", `Successfully send SLP! (client: ${tempClient.id})`),
+    );
 
     if (tempClient.state === State.Status) {
-      tempClient.#logger.writeLog(new LogEntry("Debug", `Only wanted SLP, closing now (client: ${tempClient.id})`));
+      tempClient.#logger.writeLog(
+        new LogEntry("Debug", `Only wanted SLP, closing now (client: ${tempClient.id})`),
+      );
       tempClient.drop();
       return false;
     }
