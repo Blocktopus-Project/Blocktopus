@@ -1,64 +1,84 @@
 import { sleep } from "@util/sleep.ts";
 import type { ServerError } from "@core/error.ts";
 
-interface EventInfo<T, K extends string = string> {
-  eventKind: K;
-  eventData: T;
+interface EventInfo<T> {
+  kind: string;
+  data: T;
 }
 
-type EventHandler<T, K extends string> = (
-  event: EventInfo<T, K>,
-) => Promise<void>;
-type EventPoller<T, K extends string> = () => Promise<EventInfo<T, K>>;
+type EventHandler<T> = (event: EventInfo<T>) => Promise<void>;
+type EventPoller<T> = () => Promise<EventInfo<T>>;
 type ErrorHandler = (error: ServerError) => Promise<void>;
 
-export class EventLoop<Event, EventKind extends string = string> {
-  #eventPoller: Set<EventPoller<Event, EventKind>>;
-  #eventQueue: EventInfo<Event, EventKind>[];
-  #eventHandlers: Map<EventKind, EventHandler<Event, EventKind>>;
+class Queue<T> {
+  #inner: T[];
+
+  constructor() {
+    this.#inner = [];
+  }
+
+  add(item: T) {
+    this.#inner.push(item);
+  }
+
+  takeQueue(): T[] {
+    const r = this.#inner;
+    this.#inner = [];
+    return r;
+  }
+}
+
+export class EventLoop<Event> {
+  #eventPollers: Map<string, CallableFunction>;
+  #eventQueue: Queue<EventInfo<Event>>;
+  #eventHandlers: Map<string, EventHandler<Event>>;
   #errorHandler: ErrorHandler | null;
+  #abortSignal: AbortSignal;
 
   /** Max Time Between Tick */
   #mtbt: number;
 
-  constructor(mtbt: number) {
-    this.#eventPoller = new Set();
-    this.#eventQueue = [];
+  constructor(abortSignal: AbortSignal, mtbt: number) {
+    this.#eventPollers = new Map();
+    this.#eventQueue = new Queue();
     this.#eventHandlers = new Map();
-    this.#mtbt = mtbt;
     this.#errorHandler = null;
+    this.#abortSignal = abortSignal;
+    this.#mtbt = mtbt;
   }
 
   setErrorHandler(handler: ErrorHandler) {
     this.#errorHandler = handler;
   }
 
-  setEventHandler(
-    eventKind: EventKind,
-    handler: EventHandler<Event, EventKind>,
-  ) {
+  setEventHandler(eventKind: string, handler: EventHandler<Event>) {
     this.#eventHandlers.set(eventKind, handler);
   }
 
-  removeEventHandler(eventKind: EventKind) {
+  removeEventHandler(eventKind: string) {
     this.#eventHandlers.delete(eventKind);
   }
 
-  setEventPoller(poller: EventPoller<Event, EventKind>) {
-    this.#eventPoller.add(poller);
+  setEventPoller(id: string, poller: EventPoller<Event>) {
+    const pollfn = async () => {
+      while (!this.#abortSignal.aborted && this.#eventPollers.has(id)) {
+        const v = await poller().catch(this.#errorHandler);
+        if (!v) continue;
+
+        this.#eventQueue.add(v);
+      }
+    };
+
+    this.#eventPollers.set(id, pollfn);
   }
 
-  removeEventPoller(poller: EventPoller<Event, EventKind>) {
-    this.#eventPoller.delete(poller);
+  removeEventPoller(id: string) {
+    this.#eventPollers.delete(id);
   }
 
-  async startLoop(abortSignal: AbortSignal) {
-    let isAborted = false;
-    abortSignal.addEventListener("abort", () => isAborted = true);
-
+  async startLoop() {
     let lastTick = performance.now();
-    while (!isAborted) {
-      await this.#poll();
+    while (!this.#abortSignal.aborted) {
       await this.#processEvents();
 
       const currentTick = performance.now();
@@ -70,31 +90,18 @@ export class EventLoop<Event, EventKind extends string = string> {
     }
   }
 
-  async #poll() {
-    const promises = [];
-    for (const pollFn of this.#eventPoller.values()) {
-      promises.push(pollFn().catch(this.#errorHandler));
-    }
-
-    const unfilteredResults = await Promise.all(promises);
-    this.#eventQueue = unfilteredResults.filter((x) =>
-      x !== undefined
-    ) as Array<EventInfo<Event, EventKind>>;
-  }
-
   async #processEvents() {
     const promises = [];
-    const length = this.#eventQueue.length;
-    for (let i = 0; i < length; i++) {
-      const evt = this.#eventQueue[i];
+    const queue = this.#eventQueue.takeQueue();
+    for (let i = 0; i < queue.length; i++) {
+      const evt = queue[i];
 
-      const handler = this.#eventHandlers.get(evt.eventKind);
+      const handler = this.#eventHandlers.get(evt.kind);
       if (!handler) continue;
 
       promises.push(handler(evt).catch(this.#errorHandler));
     }
 
-    this.#eventQueue = [];
     await Promise.all(promises);
   }
 }
