@@ -19,7 +19,7 @@ export function serialize(packet: ClientPacket, state: State): Uint8Array {
   }
 
   const writer = new Writer();
-  writer.setVarInt(packet.packedID);
+  writer.setVarInt(packet.packetID);
   PACKED_ENCODER[idx](writer, packet);
 
   return writer.intoPacket();

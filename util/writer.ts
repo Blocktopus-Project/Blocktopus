@@ -116,8 +116,7 @@ export class Writer {
     const bytes = new Uint8Array(this.#size + varintSize.byteLength);
     const dt = new DataView(bytes.buffer);
     bytes.set(varintSize);
-
-    let offset = 0;
+    let offset = varintSize.byteLength;
     for (let i = 0; i < this.#values.length; i++) {
       const value = this.#values[i];
 

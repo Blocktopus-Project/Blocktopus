@@ -7,11 +7,11 @@ export function serializeStatusPackets(
   writer: Writer,
   packet: Packet<StatusPayloads>,
 ): void {
-  if (packet.packedID < 0 || packet.packedID > 1) {
+  if (packet.packetID < 0 || packet.packetID > 1) {
     throw new ServerError("Redstone Serde", "Unknown Packet ID");
   }
 
-  if (packet.packedID === 0) {
+  if (packet.packetID === 0) {
     writer.setString((packet as StatusResponse).jsonResponse);
     return;
   }

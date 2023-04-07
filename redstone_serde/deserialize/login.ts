@@ -7,7 +7,7 @@ import type {
 } from "@payloads/server/mod.ts";
 import type { Reader } from "@util/reader.ts";
 
-const PACKED_DECODERS = [
+const PACKET_DECODERS = [
   loginStart,
   encryptionResponse,
 ];
@@ -42,9 +42,9 @@ export function deserializeLoginPackets(
   buffer: Reader,
   packetID: number,
 ): LoginPayloads {
-  if (packetID < 0 || packetID >= PACKED_DECODERS.length) {
+  if (packetID < 0 || packetID >= PACKET_DECODERS.length) {
     throw new ServerError("Redstone Serde", "Unknown Packet ID");
   }
 
-  return PACKED_DECODERS[packetID](buffer);
+  return PACKET_DECODERS[packetID](buffer);
 }

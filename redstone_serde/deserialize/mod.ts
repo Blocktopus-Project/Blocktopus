@@ -35,16 +35,16 @@ export function deserialize<T extends ServerBoundPayloads>(
   state: State,
 ): Packet<T> {
   const buffReader = new Reader(buffer);
-  const packedID = buffReader.getVarInt();
+  const packetID = buffReader.getVarInt();
   if (state < 0 || state >= PACKET_DECODER.length) {
     throw new ServerError("Redstone Serde", "Invalid State");
   }
 
-  const payload = PACKET_DECODER[state](buffReader, packedID);
+  const payload = PACKET_DECODER[state](buffReader, packetID);
 
   return {
     state,
-    packedID,
+    packetID,
     ...payload,
   } as Packet<T>;
 }

@@ -13,7 +13,7 @@ export type Identifier<T extends string = "minecraft"> = `${T}:${string}`;
 
 export interface BasePayload {
   state: State;
-  packedID: number;
+  packetID: number;
 }
 
 export type Packet<T> = T & BasePayload;
