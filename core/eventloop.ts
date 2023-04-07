@@ -59,7 +59,7 @@ export class EventLoop<Event> {
     this.#eventHandlers.delete(eventKind);
   }
 
-  setEventPoller(id: number, eventKind: string, poller: EventPoller<Event>) {
+  setEventPoller(eventKind: string, id: number, poller: EventPoller<Event>) {
     const pollfn = async () => {
       while (!this.#abortSignal.aborted && this.#eventPollers.has(id)) {
         const v = await poller().catch(this.#errorHandler);
