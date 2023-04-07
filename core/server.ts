@@ -1,5 +1,5 @@
 import { LogEntry, Logger } from "@core/logger.ts";
-import { EventLoop } from "@core/eventloop.ts";
+import { EventLoop, type ErrorHandler } from "@core/eventloop.ts";
 import type { ServerPacket } from "@payloads/server/mod.ts";
 import type { ServerError } from "@core/error.ts";
 import { Client } from "@core/client.ts";
@@ -41,7 +41,7 @@ export class Server extends Logger {
   #eventLoop: EventLoop<ServerPacket>;
   #config: ServerConfig;
   #innerListener: Deno.Listener;
-
+  #errorHook: ErrorHandler;
   favicon: null | `data:image/png;base64,${string}`;
 
   get serverInfo(): ServerInfo {
@@ -84,6 +84,8 @@ export class Server extends Logger {
     }
     super.addStreamOutput(Deno.stdout.writable);
 
+    this.#errorHook = createErrorHandler(this.#abortController, this);
+
     // Create favicon
     this.favicon = null;
     if (this.#config.faviconPath) {
@@ -95,14 +97,14 @@ export class Server extends Logger {
 
   async #startListening() {
     for await (const conn of this.#innerListener) {
-      const client = await Client.establishConnection(conn, this);
+      const client = await Client.establishConnection(conn, this).catch(this.#errorHook);
       if (!client) continue;
       this.#eventLoop.setEventPoller("client_poll", client.id, client.poll);
     }
   }
 
   async #startEventLoop() {
-    this.#eventLoop.setErrorHandler(createErrorHandler(this.#abortController, this));
+    this.#eventLoop.setErrorHandler(this.#errorHook);
     await this.#eventLoop.startLoop();
   }
 
