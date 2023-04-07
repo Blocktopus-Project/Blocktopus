@@ -29,7 +29,7 @@ class Queue<T> {
 }
 
 export class EventLoop<Event> {
-  #eventPollers: Map<string, CallableFunction>;
+  #eventPollers: Map<number, CallableFunction>;
   #eventQueue: Queue<EventInfo<Event>>;
   #eventHandlers: Map<string, EventHandler<Event>>;
   #errorHandler: ErrorHandler | null;
@@ -59,7 +59,7 @@ export class EventLoop<Event> {
     this.#eventHandlers.delete(eventKind);
   }
 
-  setEventPoller(id: string, poller: EventPoller<Event>) {
+  setEventPoller(id: number, poller: EventPoller<Event>) {
     const pollfn = async () => {
       while (!this.#abortSignal.aborted && this.#eventPollers.has(id)) {
         const v = await poller().catch(this.#errorHandler);
@@ -72,7 +72,7 @@ export class EventLoop<Event> {
     this.#eventPollers.set(id, pollfn);
   }
 
-  removeEventPoller(id: string) {
+  removeEventPoller(id: number) {
     this.#eventPollers.delete(id);
   }
 
