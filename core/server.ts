@@ -35,6 +35,7 @@ interface ServerInfo {
 
 export class Server extends Logger {
   #clients: Map<string, Client>;
+  #abortController: AbortController;
   #eventLoop: EventLoop<ServerPacket>;
   #config: ServerConfig;
   #innerListener: Deno.Listener;
@@ -63,7 +64,8 @@ export class Server extends Logger {
   constructor(config: ServerConfig) {
     super(config.debug);
     this.#clients = new Map();
-    this.#eventLoop = new EventLoop(1000 / 20);
+    this.#abortController = new AbortController();
+    this.#eventLoop = new EventLoop(this.#abortController.signal, 1000 / 20);
     this.#config = config;
 
     this.#innerListener = Deno.listen({
@@ -90,18 +92,14 @@ export class Server extends Logger {
 
   async #startListening() {}
 
-  async #startEventLoop(abortController: AbortController) {
-    this.#eventLoop.setErrorHandler(createErrorHandler(abortController, this));
-
-    await this.#eventLoop.startLoop(abortController.signal);
+  async #startEventLoop() {
+    this.#eventLoop.setErrorHandler(createErrorHandler(this.#abortController, this));
+    await this.#eventLoop.startLoop();
   }
 
   async listen() {
-    const abortController = new AbortController();
-    const abortPromise = new Promise((res) =>
-      abortController.signal.onabort = res
-    );
-    const eventLoopPromise = this.#startEventLoop(abortController);
+    const abortPromise = new Promise((res) => this.#abortController.signal.onabort = res);
+    const eventLoopPromise = this.#startEventLoop();
     const listenerPromise = this.#startListening();
 
     await super.writeLog(
