@@ -37,28 +37,28 @@ interface Slot {
 
 type ItemSlot = { present: false } | Slot;
 
-export interface TeleportConfirm {
+export interface TeleportConfirmPayload {
   teleportID: number;
 }
 
-export interface QueryBlockBNT {
+export interface QueryBlockBNTPayload {
   transactionID: number;
   location: Position;
 }
 
-export interface SetDifficulty {
+export interface SetDifficultyPayload {
   newDifficulty: Difficulty;
 }
 
-export interface ChatMessage {
+export interface ChatMessagePayload {
   message: string;
 }
 
-export interface ClientStatus {
+export interface ClientStatusPayload {
   actionID: ClientStatusAction;
 }
 
-export interface ClientSettings {
+export interface ClientSettingsPayload {
   locale: string;
   viewDistance: number;
   chatMode: ChatMode;
@@ -69,17 +69,17 @@ export interface ClientSettings {
   allowServerListings: boolean;
 }
 
-export interface TabComplete {
+export interface TabCompletePayload {
   transactionID: number;
   text: string;
 }
 
-export interface ClickWindowButton {
+export interface ClickWindowButtonPayload {
   windowID: number;
   buttonID: number;
 }
 
-export interface ClickWindow {
+export interface ClickWindowPayload {
   windowID: number;
   stateID: number;
   slot: number;
@@ -89,16 +89,16 @@ export interface ClickWindow {
   clickedItem: ItemSlot;
 }
 
-export interface CloseWindow {
+export interface CloseWindowPayload {
   windowID: number;
 }
 
-export interface PluginMessage {
+export interface PluginMessagePayload {
   channel: string;
   data: Uint8Array;
 }
 
-export interface EditBook {
+export interface EditBookPayload {
   hand: Hand;
   count: number;
   entries: string[];
@@ -106,18 +106,18 @@ export interface EditBook {
   titel?: string;
 }
 
-export interface QueryEntityNBT {
+export interface QueryEntityNBTPayload {
   transactionID: number;
   entitiyID: number;
 }
 
-interface InteractEntityBase {
+interface InteractEntityBasePayload {
   entityID: number;
   interactionType: InteractKind;
   sneaking: boolean;
 }
 
-interface InteractEntityAt extends InteractEntityBase {
+interface InteractEntityAtPayload extends InteractEntityBasePayload {
   interactionType: InteractKind.InteractAt;
   targetX: number;
   targetY: number;
@@ -125,9 +125,9 @@ interface InteractEntityAt extends InteractEntityBase {
   hand: Hand;
 }
 
-export type InteractEntity = InteractEntityBase | InteractEntityAt;
+export type InteractEntityPayload = InteractEntityBasePayload | InteractEntityAtPayload;
 
-export interface GenerateStructure {
+export interface GenerateStructurePayload {
   location: Position;
   levels: number;
   keepJigsaws: boolean;
@@ -140,58 +140,58 @@ export interface KeepAlive {
 /**
  * Appears to only be used on singleplayer
  */
-export interface LockDifficulty {
+export interface LockDifficultyPayload {
   locked: boolean;
 }
 
-export interface PlayerMovement {
+export interface PlayerMovementPayload {
   onGround: boolean;
 }
 
 /** Y is at Feet level */
-export type PlayerPosition = Position & PlayerMovement;
+export type PlayerPositionPayload = Position & PlayerMovementPayload;
 
-export interface PlayerRotation extends PlayerMovement {
+export interface PlayerRotationPayload extends PlayerMovementPayload {
   yaw: number;
   pitch: number;
 }
 
-export type PlayerPositionAndRotation = PlayerPosition & PlayerRotation;
+export type PlayerPositionAndRotationPayload = PlayerPositionPayload & PlayerRotationPayload;
 
-export type VehicleMove = Omit<PlayerPositionAndRotation, "onGround">;
+export type VehicleMovePayload = Omit<PlayerPositionAndRotationPayload, "onGround">;
 
-export interface SteerBoat {
+export interface SteerBoatPayload {
   leftPaddle: boolean;
   rightPaddle: boolean;
 }
 
-export interface PickItem {
+export interface PickItemPayload {
   slotToUse: number;
 }
 
-export interface CraftRecipeRequest {
+export interface CraftRecipeRequestPayload {
   windowID: number;
   recipe: Identifier;
   makeAll: boolean;
 }
 
-export interface PlayerAbilities {
+export interface PlayerAbilitiesPayload {
   flags: AbilitiesFlags;
 }
 
-export interface PlayerDigging {
+export interface PlayerDiggingPayload {
   status: DiggingStatus;
   location: Position;
   face: BlockFace;
 }
 
-export interface EntityAction {
+export interface EntityActionPayload {
   entityID: number;
   actionID: PlayerAction;
   jumpBoost: number;
 }
 
-export interface SteerVehicle {
+export interface SteerVehiclePayload {
   sideways: number;
   forward: number;
   flags: SteerVehicleFlags;
@@ -200,65 +200,65 @@ export interface SteerVehicle {
 /**
  * Compatibility reasons
  */
-export interface Pong {
+export interface PongPayload {
   ID: number;
 }
 
-export interface SetRecipeBookState {
+export interface SetRecipeBookStatePayload {
   bookID: BookID;
   bookOpen: boolean;
   filterActive: boolean;
 }
 
-export interface NameItem {
+export interface NameItemPayload {
   itemName: string;
 }
 
-export interface ResourcePackStatus {
+export interface ResourcePackStatusPayload {
   result: ResourcePackStatusResult;
 }
 
-interface AdvancementTabClose {
+interface AdvancementTabClosePayload {
   action: 1;
 }
-interface AdvancementTabOpen {
+interface AdvancementTabOpenPayload {
   action: 0;
   tabID: Identifier;
 }
 
-export type AdvancementTab = AdvancementTabClose | AdvancementTabOpen;
+export type AdvancementTabPayload = AdvancementTabClosePayload | AdvancementTabOpenPayload;
 
-export interface SelectTrade {
+export interface SelectTradePayload {
   selectedSlot: number;
 }
 
-export interface SetBeaconEffect {
+export interface SetBeaconEffectPayload {
   primaryEffect: number;
   secondaryEffect: number;
 }
 
-export interface HeldItemChange {
+export interface HeldItemChangePayload {
   slot: number;
 }
 
-export interface UpdateCommandBlock {
+export interface UpdateCommandBlockPayload {
   location: Position;
   command: string;
   mode: CommandblockExecuteMode;
 }
 
-export interface UpdateCommandBlockMinecart {
+export interface UpdateCommandBlockMinecartPayload {
   entityID: number;
   command: string;
   trackOutput: boolean;
 }
 
-export interface CreativeInventoryAction {
+export interface CreativeInventoryActionPayload {
   slot: number;
   clickedItem: Slot;
 }
 
-export interface UpdateJigsawBlock {
+export interface UpdateJigsawBlockPayload {
   location: Position;
   name: Identifier;
   target: Identifier;
@@ -267,7 +267,7 @@ export interface UpdateJigsawBlock {
   jointType: string;
 }
 
-export interface UpdateStructureBlock {
+export interface UpdateStructureBlockPayload {
   location: Position;
   action: StructureBlockAction;
   mode: StructureBlockMode;
@@ -285,20 +285,20 @@ export interface UpdateStructureBlock {
   flag: StructureBlockFlags;
 }
 
-export interface UpdateSign {
+export interface UpdateSignPayload {
   location: Position;
   lines: [string, string, string, string];
 }
 
-export interface Animaton {
+export interface AnimatonPayload {
   hand: Hand;
 }
 
-export interface Spectate {
+export interface SpectatePayload {
   targetPlayer: string;
 }
 
-export interface PlayerBlockPlacement {
+export interface PlayerBlockPlacementPayload {
   hand: Hand;
   location: Position;
   face: BlockFace;
@@ -308,54 +308,54 @@ export interface PlayerBlockPlacement {
   insideBlock: boolean;
 }
 
-export interface UseItem {
+export interface UseItemPayload {
   hand: Hand;
 }
 
 export type PlayPayloads =
-  | TeleportConfirm
-  | QueryBlockBNT
-  | SetDifficulty
-  | ChatMessage
-  | ClientStatus
-  | ClientSettings
-  | TabComplete
-  | ClickWindowButton
-  | ClickWindow
-  | CloseWindow
-  | PluginMessage
-  | EditBook
-  | QueryEntityNBT
-  | InteractEntity
-  | GenerateStructure
-  | LockDifficulty
-  | PlayerMovement
-  | PlayerPosition
-  | PlayerRotation
-  | PlayerPositionAndRotation
-  | VehicleMove
-  | SteerBoat
-  | PickItem
-  | CraftRecipeRequest
-  | PlayerAbilities
-  | PlayerDigging
-  | EntityAction
-  | SteerVehicle
-  | Pong
-  | SetRecipeBookState
-  | NameItem
-  | ResourcePackStatus
-  | AdvancementTab
-  | SelectTrade
-  | SetBeaconEffect
-  | HeldItemChange
-  | UpdateCommandBlock
-  | UpdateCommandBlockMinecart
-  | CreativeInventoryAction
-  | UpdateJigsawBlock
-  | UpdateStructureBlock
-  | UpdateSign
-  | Animaton
-  | Spectate
-  | PlayerBlockPlacement
-  | UseItem;
+  | TeleportConfirmPayload
+  | QueryBlockBNTPayload
+  | SetDifficultyPayload
+  | ChatMessagePayload
+  | ClientStatusPayload
+  | ClientSettingsPayload
+  | TabCompletePayload
+  | ClickWindowButtonPayload
+  | ClickWindowPayload
+  | CloseWindowPayload
+  | PluginMessagePayload
+  | EditBookPayload
+  | QueryEntityNBTPayload
+  | InteractEntityPayload
+  | GenerateStructurePayload
+  | LockDifficultyPayload
+  | PlayerMovementPayload
+  | PlayerPositionPayload
+  | PlayerRotationPayload
+  | PlayerPositionAndRotationPayload
+  | VehicleMovePayload
+  | SteerBoatPayload
+  | PickItemPayload
+  | CraftRecipeRequestPayload
+  | PlayerAbilitiesPayload
+  | PlayerDiggingPayload
+  | EntityActionPayload
+  | SteerVehiclePayload
+  | PongPayload
+  | SetRecipeBookStatePayload
+  | NameItemPayload
+  | ResourcePackStatusPayload
+  | AdvancementTabPayload
+  | SelectTradePayload
+  | SetBeaconEffectPayload
+  | HeldItemChangePayload
+  | UpdateCommandBlockPayload
+  | UpdateCommandBlockMinecartPayload
+  | CreativeInventoryActionPayload
+  | UpdateJigsawBlockPayload
+  | UpdateStructureBlockPayload
+  | UpdateSignPayload
+  | AnimatonPayload
+  | SpectatePayload
+  | PlayerBlockPlacementPayload
+  | UseItemPayload;
