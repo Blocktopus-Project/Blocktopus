@@ -27,7 +27,6 @@ const PACKET_DECODER: Decoder[] = [
   () => {
     throw new ServerError("Redstone Serde", "Deserializer todo!");
   },
-  // deserializePlayPackets
 ];
 
 export function deserialize<T extends ServerBoundPayloads>(
@@ -40,11 +39,9 @@ export function deserialize<T extends ServerBoundPayloads>(
     throw new ServerError("Redstone Serde", "Invalid State");
   }
 
-  const payload = PACKET_DECODER[state](buffReader, packetID);
-
   return {
     state,
     packetID,
-    ...payload,
+    ...PACKET_DECODER[state](buffReader, packetID),
   } as Packet<T>;
 }
