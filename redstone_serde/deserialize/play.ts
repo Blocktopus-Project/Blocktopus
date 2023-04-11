@@ -1,33 +1,59 @@
 import { ServerError } from "@core/error.ts";
 
 import type {
+  ChangeDifficultyPayload,
+  ConfirmTeleportationPayload,
+  MessageAcknowledgementPayload,
   PlayPayloads,
-  // QueryBlockBNTPayload,
-  TeleportConfirmPayload,
+  QueryBlockEntityTagPayload,
 } from "@payloads/server/mod.ts";
 import type { Reader } from "@util/reader.ts";
 
+/** Small utility function to deserialize position */
+function getPosition(reader: Reader) {
+  const position = reader.getBigInt64();
+
+  // There must be a better way to do this
+  // I'm abusing this gross bitshifting to get long lists
+  // of 1s to bitwise and with
+  return {
+    x: Number((position >> 38n) & ((1n << 26n) - 1n)),
+    y: Number((position >> 12n) & ((1n << 26n) - 1n)),
+    z: Number(position & ((1n << 12n) - 1n)),
+  };
+}
+
 const PACKET_DECODERS = [
   confirmTeleportation,
-  // queryBlockEntityTag
+  queryBlockEntityTag,
+  changeDifficulty,
+  messageAcknowledgment,
 ];
 
-function confirmTeleportation(reader: Reader): TeleportConfirmPayload {
+function confirmTeleportation(reader: Reader): ConfirmTeleportationPayload {
   return {
     teleportID: reader.getVarInt(),
   };
 }
 
-// function queryBlockEntityTag(reader: Reader): QueryBlockBNTPayload {
-//   return {
-//     transactionID: reader.getVarInt(),
-//     location: {
-//       x: reader.getBigInt64(),
-//       y: reader.getBigInt64(),
-//       z: reader.getBigInt64(),
-//     }
-//   };
-// }
+function queryBlockEntityTag(reader: Reader): QueryBlockEntityTagPayload {
+  return {
+    transactionID: reader.getVarInt(),
+    location: getPosition(reader),
+  };
+}
+
+function changeDifficulty(reader: Reader): ChangeDifficultyPayload {
+  return {
+    newDifficulty: reader.getInt8(),
+  };
+}
+
+function messageAcknowledgment(reader: Reader): MessageAcknowledgementPayload {
+  return {
+    messageCount: reader.getVarInt(),
+  };
+}
 
 export function deserializeLoginPackets(
   buffer: Reader,
