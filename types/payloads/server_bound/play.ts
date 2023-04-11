@@ -2,6 +2,7 @@ import type { Identifier } from "../base.ts";
 import type { Position } from "../position.ts";
 import type {
   AbilitiesFlags,
+  CommandblockFlags,
   DisplayedSkinParts,
   SteerVehicleFlags,
   StructureBlockFlags,
@@ -35,7 +36,7 @@ interface Slot {
   NBT?: string;
 }
 
-type ItemSlot = { present: false } | Slot;
+export type ItemSlot = { present: false } | Slot;
 
 export interface ConfirmTeleportationPayload {
   teleportID: number;
@@ -56,24 +57,29 @@ export interface MessageAcknowledgementPayload {
 
 export interface ChatCommandPayload {
   command: string;
-  timestamp: number;
-  salt: number;
+  timestamp: bigint;
+  salt: bigint;
   argumentSignatures: {
     argumentName: string;
     signature: Uint8Array;
-  };
+  }[];
   messageCount: number;
-  acknowledged: number;
+  acknowledged: Uint8Array;
 }
 
 export interface ChatMessagePayload {
   message: string;
+  timestamp: bigint;
+  salt: bigint;
+  signature?: Uint8Array;
+  messageCount: number;
+  acknowledged: Uint8Array;
 }
 
 export interface PlayerSessionPayload {
-  sessionID: string;
+  sessionID: bigint;
   publicKey: {
-    expiresAt: number;
+    expiresAt: bigint;
     publicKey: Uint8Array;
     keySignature: Uint8Array;
   };
@@ -124,11 +130,9 @@ export interface PluginMessagePayload {
 }
 
 export interface EditBookPayload {
-  hand: Hand;
-  count: number;
+  slot: number;
   entries: string[];
-  hasTitle: boolean;
-  titel?: string;
+  title?: string;
 }
 
 export interface QueryEntityTagPayload {
@@ -138,7 +142,7 @@ export interface QueryEntityTagPayload {
 
 interface InteractEntityBasePayload {
   entityID: number;
-  interactionType: InteractKind;
+  type: InteractKind;
   sneaking: boolean;
 }
 
@@ -159,7 +163,7 @@ export interface JigsawGeneratePayload {
 }
 
 export interface KeepAlivePayload {
-  keepAliveID: number;
+  keepAliveID: bigint;
 }
 
 /**
@@ -218,6 +222,7 @@ export interface PlayerActionPayload {
   status: DiggingStatus;
   location: Position;
   face: BlockFace;
+  sequence: number;
 }
 
 export interface PlayerCommandPayload {
@@ -272,8 +277,8 @@ export interface SelectTradePayload {
 }
 
 export interface SetBeaconEffectPayload {
-  primaryEffect: number;
-  secondaryEffect: number;
+  primaryEffect?: number;
+  secondaryEffect?: number;
 }
 
 export interface SetHeldItemPayload {
@@ -284,6 +289,7 @@ export interface ProgramCommandBlockPayload {
   location: Position;
   command: string;
   mode: CommandblockExecuteMode;
+  flags: CommandblockFlags;
 }
 
 export interface ProgramCommandBlockMinecartPayload {
@@ -294,7 +300,7 @@ export interface ProgramCommandBlockMinecartPayload {
 
 export interface SetCreativeModeSlotPayload {
   slot: number;
-  clickedItem: Slot;
+  clickedItem: ItemSlot;
 }
 
 export interface ProgramJigsawBlockPayload {
@@ -310,6 +316,7 @@ export interface ProgramStructureBlockPayload {
   location: Position;
   action: StructureBlockAction;
   mode: StructureBlockMode;
+  name: string;
   offsetX: OffsetRange;
   offsetY: OffsetRange;
   offsetZ: OffsetRange;
@@ -321,7 +328,7 @@ export interface ProgramStructureBlockPayload {
   metadata: string;
   integrity: number;
   seed: bigint;
-  flag: StructureBlockFlags;
+  flags: StructureBlockFlags;
 }
 
 export interface UpdateSignPayload {
@@ -334,7 +341,7 @@ export interface SwingArmPayload {
 }
 
 export interface TeleportToEntityPayload {
-  targetPlayer: string;
+  targetPlayer: bigint;
 }
 
 export interface UseItemOnPayload {
@@ -345,10 +352,12 @@ export interface UseItemOnPayload {
   cursorPositionY: number;
   cursorPositionZ: number;
   insideBlock: boolean;
+  sequence: number;
 }
 
 export interface UseItemPayload {
   hand: Hand;
+  sequence: number;
 }
 
 export type PlayPayloads =

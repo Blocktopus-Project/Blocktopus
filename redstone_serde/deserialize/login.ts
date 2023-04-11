@@ -6,6 +6,7 @@ import type {
   LoginStartPayload,
 } from "@payloads/server/mod.ts";
 import type { Reader } from "@util/reader.ts";
+import { deserializeUUID } from "../util.ts";
 
 const PACKET_DECODERS = [
   loginStart,
@@ -17,7 +18,7 @@ function loginStart(reader: Reader): LoginStartPayload {
     name: reader.getString(),
     hasPlayerUUID: !!reader.getUint8(),
     // Slow asf :|
-    playerUUID: (reader.getBigUint64() << 64n) | reader.getBigUint64(),
+    playerUUID: deserializeUUID(reader),
   };
 }
 
