@@ -1,14 +1,13 @@
 import type { Position } from "@payloads/position.ts";
-import { Reader } from "@util/reader.ts";
+import type { Reader } from "@util/reader.ts";
 
 const POSITION_X_BITSHIFT = 38n;
 const POSITION_Y_BITSHIFT = 0xFFFn;
 const POSITION_Z_BITSHIFT1 = 12n;
 const POSITION_Z_BITSHIFT2 = 0x3FFFFFFn;
 
-export function deserializePosition(buffer: Uint8Array): Position {
-  const dt = new DataView(buffer.buffer);
-  const bigint = dt.getBigUint64(0);
+export function deserializePosition(reader: Reader): Position {
+  const bigint = reader.getBigUint64();
 
   let x = Number(bigint >> POSITION_X_BITSHIFT);
   let y = Number(bigint & POSITION_Y_BITSHIFT);
