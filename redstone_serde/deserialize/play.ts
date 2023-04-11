@@ -139,7 +139,7 @@ function confirmTeleportation(reader: Reader): ConfirmTeleportationPayload {
 function queryBlockEntityTag(reader: Reader): QueryBlockEntityTagPayload {
   return {
     transactionID: reader.getVarInt(),
-    location: deserializePosition(reader.getSlice(8)),
+    location: deserializePosition(reader),
   };
 }
 
@@ -295,7 +295,7 @@ function interact(reader: Reader): InteractPayload {
 
 function jigsawGenerate(reader: Reader): JigsawGeneratePayload {
   return {
-    location: deserializePosition(reader.getSlice(8)),
+    location: deserializePosition(reader),
     levels: reader.getVarInt(),
     keepJigsaws: !!reader.getInt8(),
   };
@@ -394,7 +394,7 @@ function playerAbilities(reader: Reader): PlayerAbilitiesPayload {
 function playerAction(reader: Reader): PlayerActionPayload {
   return {
     status: reader.getVarInt(),
-    location: deserializePosition(reader.getSlice(8)),
+    location: deserializePosition(reader),
     face: reader.getInt8(),
     sequence: reader.getVarInt(),
   };
@@ -491,7 +491,7 @@ function programCommandBlock(reader: Reader): ProgramCommandBlockPayload {
   });
 
   return {
-    location: deserializePosition(reader.getSlice(8)),
+    location: deserializePosition(reader),
     command: reader.getString(),
     mode: reader.getVarInt(),
     flags: getCommandParts(reader.getInt8()),
@@ -515,7 +515,7 @@ function setCreativeModeSlot(reader: Reader): SetCreativeModeSlotPayload {
 
 function programJigsawBlock(reader: Reader): ProgramJigsawBlockPayload {
   return {
-    location: deserializePosition(reader.getSlice(8)),
+    location: deserializePosition(reader),
     name: reader.getString() as Identifier,
     target: reader.getString() as Identifier,
     pool: reader.getString() as Identifier,
@@ -532,7 +532,7 @@ function programStructureBlock(reader: Reader): ProgramStructureBlockPayload {
   });
 
   return {
-    location: deserializePosition(reader.getSlice(8)),
+    location: deserializePosition(reader),
     action: reader.getVarInt(),
     mode: reader.getVarInt(),
     name: reader.getString(),
@@ -553,7 +553,7 @@ function programStructureBlock(reader: Reader): ProgramStructureBlockPayload {
 
 function updateSign(reader: Reader): UpdateSignPayload {
   return {
-    location: deserializePosition(reader.getSlice(8)),
+    location: deserializePosition(reader),
     lines: [
       reader.getString(),
       reader.getString(),
@@ -578,7 +578,7 @@ function teleportToEntity(reader: Reader): TeleportToEntityPayload {
 function useItemOn(reader: Reader): UseItemOnPayload {
   return {
     hand: reader.getVarInt(),
-    location: deserializePosition(reader.getSlice(8)),
+    location: deserializePosition(reader),
     face: reader.getVarInt(),
     cursorPositionX: reader.getFloat32(),
     cursorPositionY: reader.getFloat32(),
