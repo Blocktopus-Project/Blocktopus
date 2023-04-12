@@ -63,7 +63,7 @@ import { OffsetRange } from "@payloads/structureblock.ts";
 import { Enumerate } from "../../types/range.ts";
 
 // Somewhat gross function to read a slot from reader
-function readSlot(reader: Reader) {
+function readSlot(reader: Reader): ItemSlot {
   return (reader.getInt8()
     ? {
       present: true,
@@ -73,7 +73,7 @@ function readSlot(reader: Reader) {
     }
     : {
       present: false,
-    }) satisfies ItemSlot;
+    });
 }
 
 const PACKET_DECODERS = [
@@ -240,7 +240,7 @@ function clickContainer(reader: Reader): ClickContainerPayload {
     stateID: reader.getVarInt(),
     slot: reader.getInt16(),
     button: reader.getInt8(),
-    mode: reader.getVarInt() as 0 | 1 | 2 | 3 | 4 | 5 | 6,
+    mode: reader.getVarInt() as Click,
     slots: new Array(reader.getVarInt()).fill(undefined).map(() => ({
       position: reader.getInt16(),
       slot: readSlot(reader),
@@ -287,6 +287,7 @@ function interact(reader: Reader): InteractPayload {
         targetX: reader.getFloat32(),
         targetY: reader.getFloat32(),
         targetZ: reader.getFloat32(),
+        hand: reader.getVarInt(),
       }
       : {}),
     sneaking: !!reader.getInt8(),
