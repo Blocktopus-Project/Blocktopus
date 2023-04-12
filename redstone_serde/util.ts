@@ -23,3 +23,7 @@ export function deserializePosition(reader: Reader): Position {
     z,
   };
 }
+
+export function deserializeUUID(reader: Reader) {
+  return (reader.getBigUint64() << 64n) | reader.getBigUint64();
+}

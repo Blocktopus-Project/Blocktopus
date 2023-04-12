@@ -26,6 +26,16 @@ export enum Hand {
   Offhand,
 }
 
+export enum ClickMode {
+  Normal,
+  Shift,
+  Hotkey,
+  Copy,
+  Drop,
+  Drag,
+  Double,
+}
+
 export enum DiggingStatus {
   StartedDigging,
   CancelledDigging,
