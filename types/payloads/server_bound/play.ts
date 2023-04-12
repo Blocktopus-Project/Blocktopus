@@ -11,7 +11,7 @@ import type {
   BlockFace,
   BookID,
   ChatMode,
-  Click,
+  ClickMode,
   ClientStatusAction,
   CommandblockExecuteMode,
   Difficulty,
@@ -116,7 +116,7 @@ export interface ClickContainerPayload {
   stateID: number;
   slot: number;
   button: number;
-  mode: Click;
+  mode: ClickMode;
   slots: ItemSlot[];
   clickedItem: ItemSlot;
 }

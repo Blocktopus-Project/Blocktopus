@@ -26,11 +26,11 @@ export enum Hand {
   Offhand,
 }
 
-export enum Click {
+export enum ClickMode {
   Normal,
   Shift,
-  Key,
-  Middle,
+  Hotkey,
+  Copy,
   Drop,
   Drag,
   Double,

@@ -56,7 +56,7 @@ import type {
   UseItemPayload,
 } from "@payloads/server/mod.ts";
 import type { Reader } from "@util/reader.ts";
-import { Click, InteractKind } from "@payloads/enums.ts";
+import { ClickMode, InteractKind } from "@payloads/enums.ts";
 import { deserializePosition, deserializeUUID } from "../util.ts";
 import { Identifier } from "@payloads/base.ts";
 import { OffsetRange } from "@payloads/structureblock.ts";
@@ -240,7 +240,7 @@ function clickContainer(reader: Reader): ClickContainerPayload {
     stateID: reader.getVarInt(),
     slot: reader.getInt16(),
     button: reader.getInt8(),
-    mode: reader.getVarInt() as Click,
+    mode: reader.getVarInt() as ClickMode,
     slots: new Array(reader.getVarInt()).fill(undefined).map(() => ({
       position: reader.getInt16(),
       slot: readSlot(reader),
