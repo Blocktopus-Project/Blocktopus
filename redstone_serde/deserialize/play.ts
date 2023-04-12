@@ -56,7 +56,7 @@ import type {
   UseItemPayload,
 } from "@payloads/server/mod.ts";
 import type { Reader } from "@util/reader.ts";
-import { InteractKind } from "@payloads/enums.ts";
+import { Click, InteractKind } from "@payloads/enums.ts";
 import { deserializePosition, deserializeUUID } from "../util.ts";
 import { Identifier } from "@payloads/base.ts";
 import { OffsetRange } from "@payloads/structureblock.ts";
