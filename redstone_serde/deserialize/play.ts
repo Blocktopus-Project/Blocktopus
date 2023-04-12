@@ -282,14 +282,10 @@ function interact(reader: Reader): InteractPayload {
   return {
     entityID,
     type,
-    ...(type === InteractKind.InteractAt
-      ? {
-        targetX: reader.getFloat32(),
-        targetY: reader.getFloat32(),
-        targetZ: reader.getFloat32(),
-        hand: reader.getVarInt(),
-      }
-      : {}),
+    targetX: type === InteractKind.InteractAt ? reader.getFloat32() : undefined,
+    targetY: type === InteractKind.InteractAt ? reader.getFloat32() : undefined,
+    targetZ: type === InteractKind.InteractAt ? reader.getFloat32() : undefined,
+    hand: type !== InteractKind.Attack ? reader.getVarInt() : undefined,
     sneaking: !!reader.getInt8(),
   };
 }
