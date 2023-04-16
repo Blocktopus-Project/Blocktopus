@@ -1,11 +1,12 @@
-// import type { LoginPayloads } from "./login.ts";
+import type { LoginPayloads } from "./login.ts";
 // import type { PlayPayloads } from "./play.ts";
 import type { StatusPayloads } from "./status.ts";
 import type { Packet } from "../base.ts";
 
-export type ClientBoundPayloads = // | LoginPayloads
+export type ClientBoundPayloads =
+  | LoginPayloads
   // | PlayPayloads
-  StatusPayloads;
+  | StatusPayloads;
 
 export type ClientPacket = Packet<ClientBoundPayloads>;
 export * from "./login.ts";
