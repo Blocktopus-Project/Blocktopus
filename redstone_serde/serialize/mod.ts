@@ -1,5 +1,6 @@
 import { ServerError } from "@core/error.ts";
 import { serializeStatusPackets } from "./status.ts";
+import { serializeLoginPackets } from "./login.ts";
 import { Writer } from "@util/writer.ts";
 import type { ClientPacket } from "@payloads/client/mod.ts";
 import type { State } from "@payloads/mod.ts";
@@ -7,8 +8,8 @@ import type { State } from "@payloads/mod.ts";
 type Encoder = (writer: Writer, packet: ClientPacket) => void;
 
 const PACKED_ENCODER: Encoder[] = [
-  serializeStatusPackets,
-  // serializeLoginPackets,
+  serializeStatusPackets as Encoder,
+  serializeLoginPackets as Encoder,
   // serializePlayPackets
 ];
 
