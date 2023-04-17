@@ -49,7 +49,7 @@ export class Client {
     );
 
     if (tempClient.state === State.Status) {
-      tempClient.#logger.writeLog(
+      await tempClient.#logger.writeLog(
         new LogEntry("Debug", `Only wanted SLP, closing now (client: ${tempClient.id})`),
       );
       tempClient.drop();
