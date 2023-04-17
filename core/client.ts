@@ -94,7 +94,7 @@ export class Client {
       return deserialize<T>(packetSizeBytes, this.state);
     }
 
-    const packetBuffer = (await reader.read(new Uint8Array(packetSize))).value;
+    const packetBuffer = (await reader.read(new Uint8Array(packetSize - 3 + bytesRead))).value;
     reader.releaseLock();
 
     if (!packetBuffer) {
