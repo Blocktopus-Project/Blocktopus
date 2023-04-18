@@ -128,3 +128,10 @@ export enum EntityAnimation {
   CRITICAL_EFFECT,
   MAGIC_CRITICAL_EFFECT,
 }
+
+export enum Gamemode {
+  SURVIVAL,
+  CREATIVE,
+  ADVENTURE,
+  SPECTATOR,
+}
