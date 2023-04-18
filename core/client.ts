@@ -4,10 +4,7 @@ import { readVarInt } from "@util/varint.ts";
 import { deserialize, serialize } from "@serde/mod.ts";
 import { type Packet, State } from "@payloads/mod.ts";
 import type { ClientBoundPayloads } from "@payloads/client/mod.ts";
-import type {
-  HandshakePayload,
-  ServerBoundPayloads,
-} from "@payloads/server/mod.ts";
+import type { HandshakePayload, ServerBoundPayloads } from "@payloads/server/mod.ts";
 import type { Server } from "@core/server.ts";
 
 export class Client {
