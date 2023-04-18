@@ -34,9 +34,9 @@ function loginSuccess(writer: Writer, packet: LoginSuccessPayload) {
   writer.setBigUint64(packet.UUID >> 64n);
   writer.setBigUint64(packet.UUID & 0xFFFFFFFFFFFFFFFFn);
   writer.setString(packet.username);
-  writer.setVarInt(packet.numberOfProps);
+  writer.setVarInt(packet.properties.length);
 
-  for (let i = 0; i < packet.numberOfProps; i++) {
+  for (let i = 0; i < packet.properties.length; i++) {
     writer.setString(packet.properties[i].name);
     writer.setString(packet.properties[i].value);
     writer.setUint8(packet.properties[i].isSigned ? 1 : 0);

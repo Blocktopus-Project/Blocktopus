@@ -16,9 +16,8 @@ const PACKET_DECODERS = [
 function loginStart(reader: Reader): LoginStartPayload {
   return {
     name: reader.getString(),
-    hasPlayerUUID: !!reader.getUint8(),
     // Slow asf :|
-    playerUUID: deserializeUUID(reader),
+    playerUUID: reader.getUint8() ? deserializeUUID(reader) : undefined,
   };
 }
 

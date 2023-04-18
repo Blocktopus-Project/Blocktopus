@@ -1,8 +1,7 @@
 export interface LoginStartPayload {
   name: string;
-  hasPlayerUUID: boolean;
   /** 128 bit bigint */
-  playerUUID: bigint;
+  playerUUID?: bigint;
 }
 
 export interface EncryptionResponsePayload {
