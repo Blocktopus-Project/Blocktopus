@@ -833,7 +833,7 @@ type Criteria = {
   criterion: {
     dateOfAchieving?: bigint;
   };
-}[];
+};
 
 export interface UpdateAdvancementsPayload {
   reset: boolean;
@@ -851,7 +851,7 @@ export interface UpdateAdvancementsPayload {
         xCoord: number;
         yCoord: number;
       };
-      critieria: Criteria;
+      criteria: Criteria[];
       requirements: {
         requirement: string[];
       }[];
@@ -862,7 +862,7 @@ export interface UpdateAdvancementsPayload {
     key: Identifier;
     value: {
       identifier: Identifier;
-      critieria: Criteria;
+      critieria: Criteria[];
     }[];
   }[];
 }
