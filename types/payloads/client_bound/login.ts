@@ -27,7 +27,6 @@ export interface LoginSuccessPayload {
   /** 128 bit bigint */
   UUID: bigint;
   username: string;
-  numberOfProps: number;
   properties: Property[];
 }
 

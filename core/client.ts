@@ -37,19 +37,20 @@ export class Client {
       return false;
     }
 
-    tempClient.state = packet.nextState;
     // Set state to the next one
-    await tempClient.send({
-      state: State.HandShaking,
-      packetID: 0x00,
-      jsonResponse: JSON.stringify(server.serverInfo),
-    });
-    await tempClient.#logger.writeLog(
-      new LogEntry("Debug", `Successfully send SLP! (client: ${tempClient.id})`),
-    );
+    tempClient.state = packet.nextState;
 
     if (tempClient.state === State.Status) {
-      tempClient.#logger.writeLog(
+      await tempClient.send({
+        state: State.HandShaking,
+        packetID: 0x00,
+        jsonResponse: JSON.stringify(server.serverInfo),
+      });
+      await tempClient.#logger.writeLog(
+        new LogEntry("Debug", `Successfully send SLP! (client: ${tempClient.id})`),
+      );
+
+      await tempClient.#logger.writeLog(
         new LogEntry("Debug", `Only wanted SLP, closing now (client: ${tempClient.id})`),
       );
       tempClient.drop();
