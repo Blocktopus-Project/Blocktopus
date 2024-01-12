@@ -1,4 +1,7 @@
 {
+  "tasks": {
+    "dev": "deno run -A --unstable --watch main.ts"
+  },
   "imports": {
     "@util/": "./util/",
     "@core/": "./core/",
@@ -9,8 +12,6 @@
     "@/": "./"
   },
   "fmt": {
-    "options": {
-      "lineWidth": 100
-    }
+    "lineWidth": 100
   }
 }

@@ -11,11 +11,7 @@ type EventPoller<T> = () => Promise<T>;
 export type ErrorHandler = (error: ServerError) => Promise<void>;
 
 class Queue<T> {
-  #inner: T[];
-
-  constructor() {
-    this.#inner = [];
-  }
+  #inner: T[] = [];
 
   add(item: T) {
     this.#inner.push(item);
@@ -29,20 +25,16 @@ class Queue<T> {
 }
 
 export class EventLoop<Event> {
-  #eventPollers: Map<number, CallableFunction>;
-  #eventQueue: Queue<EventInfo<Event>>;
-  #eventHandlers: Map<string, EventHandler<Event>>;
-  #errorHandler: ErrorHandler | null;
+  #eventPollers: Map<number, CallableFunction> = new Map();
+  #eventQueue: Queue<EventInfo<Event>> = new Queue();
+  #eventHandlers: Map<string, EventHandler<Event>> = new Map();
+  #errorHandler: ErrorHandler | null = null;
   #abortSignal: AbortSignal;
 
   /** Max Time Between Tick */
   #mtbt: number;
 
   constructor(abortSignal: AbortSignal, mtbt: number) {
-    this.#eventPollers = new Map();
-    this.#eventQueue = new Queue();
-    this.#eventHandlers = new Map();
-    this.#errorHandler = null;
     this.#abortSignal = abortSignal;
     this.#mtbt = mtbt;
   }

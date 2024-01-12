@@ -10,13 +10,12 @@ import type { Server } from "@core/server.ts";
 export class Client {
   #inner: Deno.Conn;
   #logger: Logger;
-  state: State;
+  state: State = State.HandShaking;
   id: number;
 
   constructor(conn: Deno.Conn, logger: Logger) {
     this.#inner = conn;
     this.#logger = logger;
-    this.state = State.HandShaking;
     this.id = conn.rid;
   }
 

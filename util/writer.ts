@@ -25,13 +25,8 @@ type Value =
   | BinaryValue;
 
 export class Writer {
-  #values: Value[];
-  #size: number;
-
-  constructor() {
-    this.#values = [];
-    this.#size = 0;
-  }
+  #values: Value[] = [];
+  #size = 0;
 
   setFloat32(value: number, littleEndian = false): void {
     this.#values.push({ kind: "f32", value, littleEndian });

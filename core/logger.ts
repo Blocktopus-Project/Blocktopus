@@ -41,13 +41,11 @@ export class LogEntry {
 }
 
 export class Logger {
-  #transformStreams: TransformStream<LogEntry, string>[];
+  #transformStreams: TransformStream<LogEntry, string>[] = [];
   #isDebug: boolean;
-  #fileHandles: Deno.FsFile[];
+  #fileHandles: Deno.FsFile[] = [];
 
   constructor(isDebug = false) {
-    this.#transformStreams = [];
-    this.#fileHandles = [];
     this.#isDebug = isDebug;
   }
 
