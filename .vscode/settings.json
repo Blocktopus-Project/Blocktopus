@@ -1,4 +1,5 @@
 {
   "deno.config": "./deno.json",
+  "deno.unstable": true,
   "deno.enable": true
 }
