@@ -1,0 +1,6 @@
+{
+  "maxPlayers": 20,
+  "motd": "A Minecraft Server",
+  "port": 8080,
+  "debug": true
+}

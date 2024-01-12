@@ -10,19 +10,15 @@ import type { Server } from "@core/server.ts";
 export class Client {
   #inner: Deno.Conn;
   #logger: Logger;
-  state: State;
+  state: State = State.HandShaking;
   id: number;
 
   constructor(conn: Deno.Conn, logger: Logger) {
     this.#inner = conn;
     this.#logger = logger;
-    this.state = State.HandShaking;
     this.id = conn.rid;
   }
 
-  /**
-   * Returns `false` if the client only wants a Server List Ping
-   */
   static async establishConnection(conn: Deno.Conn, server: Server): Promise<Client | false> {
     const tempClient = new Client(conn, server);
     await tempClient.#logger.writeLog(

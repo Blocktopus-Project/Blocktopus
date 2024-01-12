@@ -4,14 +4,12 @@ const TEXT_DECODER = new TextDecoder();
 
 export class Reader {
   #inner: Uint8Array;
-  #ptr: number;
+  #ptr = 0;
   #view: DataView;
-
   readonly buffer: ArrayBuffer;
 
   constructor(buff: Uint8Array) {
     this.#inner = buff;
-    this.#ptr = 0;
     this.#view = new DataView(buff.buffer, buff.byteOffset, buff.byteLength);
     this.buffer = buff.buffer;
   }

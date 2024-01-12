@@ -41,13 +41,13 @@ interface ServerInfo {
 }
 
 export class Server extends Logger {
-  #clients: Map<string, Client>;
-  #abortController: AbortController;
+  #clients: Map<string, Client> = new Map();
+  #abortController: AbortController = new AbortController();
   #eventLoop: EventLoop<ServerPacket>;
   #config: ServerConfig;
   #innerListener: Deno.Listener;
   #errorHook: ErrorHandler;
-  favicon: null | `data:image/png;base64,${string}`;
+  favicon: null | `data:image/png;base64,${string}` = null;
 
   get serverInfo(): ServerInfo {
     const info: ServerInfo = {
@@ -71,8 +71,6 @@ export class Server extends Logger {
 
   constructor(config: ServerConfig) {
     super(config.debug);
-    this.#clients = new Map();
-    this.#abortController = new AbortController();
     this.#eventLoop = new EventLoop(this.#abortController.signal, 1000 / 20);
     this.#config = config;
 
@@ -92,7 +90,6 @@ export class Server extends Logger {
     this.#errorHook = createErrorHandler(this.#abortController, this);
 
     // Create favicon
-    this.favicon = null;
     if (this.#config.faviconPath) {
       const fileData = Deno.readFileSync(this.#config.faviconPath);
       const base64 = btoa(String.fromCharCode(...fileData));
